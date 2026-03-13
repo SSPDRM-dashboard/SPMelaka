@@ -671,7 +671,7 @@ function expandRows(rows){
     const pangkat   = String(row[14]||'').trim();
     const tarikh    = String(row[15]||'').trim();
     const jenis     = String(row[16]||'').trim();
-    const masa = row[17] ? row[17] : '—'; // HH:MM from Apps Script
+    const masa = row[21] ? row[21] : '—'; // HH:MM from Apps Script
     const jam  = parseFloat(row[18])||0;
     const lain = String(row[19]||'').trim();
 
