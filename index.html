@@ -2,308 +2,879 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SSPDRM - Dashboard Penugasan</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy:#003087; --navy-dark:#001f5c; --navy-mid:#0a3fa8;
-    --gold:#FFD700; --gold-dark:#c9a800;
-    --dark:#0f172a; --muted:#64748b;
-    --card:#fff; --bg:#f1f5f9; --border:#e2e8f0;
-    --red:#dc2626; --green:#16a34a; --amber:#d97706;
+  :root{
+    --navy:#003087;--navy-dark:#001f5c;--navy-mid:#0a3fa8;
+    --gold:#FFD700;--gold-dark:#c9a800;
+    --dark:#0f172a;--muted:#64748b;
+    --card:#fff;--bg:#f1f5f9;--border:#e2e8f0;
+    --red:#dc2626;--green:#16a34a;--amber:#d97706;
   }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-  body { font-family:'Inter', sans-serif; background:var(--bg); color:var(--dark); min-height:100vh; overflow-x: hidden; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
 
-  /* LOGIN PAGE */
-  #loginPage {
-    display:flex; align-items:center; justify-content:center;
-    min-height:100vh; background:linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 60%, #1d4ed8 100%);
-    position:fixed; inset:0; z-index:999; padding: 20px;
+  /* ── LOGIN PAGE ── */
+  #loginPage{
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;
+    background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 60%,#1d4ed8 100%);
+    position:fixed;inset:0;z-index:999;
   }
-  .login-box {
-    background:white; border-radius:20px; padding:40px;
-    width:100%; max-width:400px; box-shadow:0 24px 64px rgba(0,0,0,0.35); text-align:center;
+  .login-box{
+    background:white;border-radius:20px;padding:40px 44px;
+    width:100%;max-width:420px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.35);
+    text-align:center;
   }
-  .login-logo { width:80px; height:80px; margin-bottom:16px; }
-  .login-title { font-family:'Rajdhani', sans-serif; font-size:22px; font-weight:700; color:var(--navy); margin-bottom:4px; }
-  .login-field { margin-bottom:16px; text-align:left; }
-  .login-field label { font-size:12px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px; }
-  .login-field input {
-    width:100%; border:1.5px solid var(--border); border-radius:10px;
-    padding:12px; font-size:16px; outline:none; /* Font size 16px to prevent iOS auto-zoom */
+  .login-logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px;}
+  .login-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
+  .login-field{margin-bottom:16px;text-align:left;}
+  .login-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+  .login-field input{
+    width:100%;border:1.5px solid var(--border);border-radius:10px;
+    padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;
+    outline:none;color:var(--dark);transition:border-color .2s;
   }
-  .btn-login {
-    width:100%; background:var(--navy); color:white; border:none; border-radius:10px;
-    padding:14px; font-weight:700; cursor:pointer; margin-top:8px;
+  .login-field input:focus{border-color:var(--navy);}
+  .btn-login{
+    width:100%;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));
+    color:white;border:none;border-radius:10px;padding:13px;
+    font-size:14px;font-family:'Inter',sans-serif;font-weight:700;
+    cursor:pointer;margin-top:8px;letter-spacing:.04em;
+    transition:opacity .2s;
   }
-
-  /* DASHBOARD */
-  #dashboardPage { display:none; }
-  header {
-    background:linear-gradient(135deg, var(--navy-dark), var(--navy-mid));
-    padding:10px 20px; color:white; display:flex; align-items:center; justify-content:space-between;
-    position:sticky; top:0; z-index:100; border-bottom:3px solid var(--gold);
+  .btn-login:hover{opacity:.9;}
+  .login-error{
+    background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;
+    border-radius:8px;padding:10px 14px;font-size:13px;
+    margin-top:14px;display:none;
   }
-  .header-title { font-family:'Rajdhani', sans-serif; font-size:18px; font-weight:700; }
-  
-  .tabs { background:white; border-bottom:1px solid var(--border); display:flex; overflow-x:auto; padding:0 10px; scrollbar-width: none; }
-  .tab { padding:15px 20px; font-size:13px; font-weight:600; color:var(--muted); white-space:nowrap; cursor:pointer; border-bottom:3px solid transparent; }
-  .tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+  .login-footer{font-size:11px;color:var(--muted);margin-top:20px;}
+  .login-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .user-role-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--muted);}
 
-  main { padding:15px; max-width:1400px; margin:0 auto; }
-  .date-banner { border-radius:14px; padding:20px; margin-bottom:15px; color:white; display:flex; justify-content:space-between; align-items:center; }
-  .navy { background: linear-gradient(135deg, var(--navy), var(--navy-mid)); }
-  .kpi-row { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; margin-bottom:15px; }
-  @media(min-width: 768px) { .kpi-row { grid-template-columns: repeat(5, 1fr); } }
-  .kpi { background:white; border-radius:12px; padding:15px; border:1px solid var(--border); }
-  .kpi-value { font-family:'Rajdhani', sans-serif; font-size:28px; font-weight:700; }
-  
-  .grid-wide { display:grid; grid-template-columns:1fr; gap:15px; margin-bottom:15px; }
-  @media(min-width: 1024px) { .grid-wide { grid-template-columns: 3fr 2fr; } }
-  
-  .card { background:white; border-radius:12px; padding:20px; border:1px solid var(--border); position: relative; }
-  .chart-container { position: relative; height: 250px; width: 100%; }
+  /* ── DASHBOARD ── */
+  #dashboardPage{display:none;}
 
-  .table-wrap { background:white; border-radius:12px; border:1px solid var(--border); overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; font-size:12px; min-width: 600px; }
-  th { background:#f8fafc; padding:12px; text-align:left; color:var(--muted); font-weight:700; border-bottom:2px solid var(--border); }
-  td { padding:12px; border-bottom:1px solid var(--border); }
+  header{background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,48,135,0.4);border-bottom:3px solid var(--gold);}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .pdrm-logo{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+  .header-titles{display:flex;flex-direction:column;}
+  .header-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:white;letter-spacing:.05em;line-height:1.1;}
+  .header-sub{font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:.08em;text-transform:uppercase;}
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .live-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:5px 12px;}
+  .live-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+  .live-text{font-size:12px;color:white;font-weight:500;}
+  .date-day{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--gold);}
+  .user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;cursor:pointer;}
+  .user-pill span{font-size:12px;color:white;font-weight:600;}
+  .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
+  .btn-logout:hover{background:rgba(255,255,255,0.25);}
 
-  .alert { padding:15px; border-radius:8px; margin-bottom:15px; display:none; font-size:13px; }
-  .alert-error { background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; }
-  .alert-info { background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; }
+  .url-bar{background:white;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+  .url-bar label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
+  .url-bar input{flex:1;min-width:260px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Inter',sans-serif;outline:none;color:var(--dark);}
+  .url-bar input:focus{border-color:var(--navy);}
+  .btn-load{background:var(--navy);color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
+  .btn-load:hover{background:var(--navy-dark);}
+  .next-refresh{font-size:11px;color:var(--muted);margin-left:auto;}
 
-  footer { text-align:center; padding:20px; font-size:11px; color:var(--muted); }
+  .tabs{background:white;border-bottom:2px solid var(--border);padding:0 32px;display:flex;gap:0;overflow-x:auto;}
+  .tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+  .tab:hover{color:var(--navy);}
+  .tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .tab.d1.active{color:#b91c1c;border-bottom-color:#b91c1c;}
+  .tab.d2.active{color:#15803d;border-bottom-color:#15803d;}
+  .tab.d3.active{color:#b45309;border-bottom-color:#b45309;}
+  .tab.d4.active{color:#7c3aed;border-bottom-color:#7c3aed;}
+  .tab.hidden{display:none;}
+
+  main{padding:24px 32px;max-width:1400px;margin:0 auto;}
+  .alert{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px;display:none;}
+  .alert-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;}
+  .alert-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1e40af;}
+
+  .date-banner{border-radius:14px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:white;}
+  .date-banner.navy{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);}
+  .date-banner.red{background:linear-gradient(135deg,#991b1b 0%,#dc2626 100%);}
+  .date-banner.green{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);}
+  .date-banner.amber{background:linear-gradient(135deg,#78350f 0%,#d97706 100%);}
+  .date-banner.purple{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);}
+  .date-banner-left{display:flex;align-items:center;gap:12px;}
+  .date-icon{font-size:28px;}
+  .date-banner-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);}
+  .date-banner-sub{font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px;}
+  .date-banner-count{text-align:right;}
+  .date-banner-num{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
+  .date-banner-label{font-size:11px;color:rgba(255,255,255,0.7);}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi{background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+  .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+  .kpi-icon{font-size:20px;margin-bottom:8px;}
+  .kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  .kpi-value{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;color:var(--dark);line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px;}
+  .kpi-bar.navy{background:var(--navy);}
+  .kpi-bar.gold{background:var(--gold-dark);}
+  .kpi-bar.green{background:var(--green);}
+  .kpi-bar.red{background:var(--red);}
+  .kpi-bar.amber{background:var(--amber);}
+
+  .grid-wide{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px;}
+  .card{background:var(--card);border-radius:12px;padding:20px 22px;border:1px solid var(--border);margin-bottom:18px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .card-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--dark);}
+  .card-badge{font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--muted);font-weight:600;}
+  .card canvas{max-height:220px;}
+
+  .table-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead tr{background:#f8fafc;border-bottom:2px solid var(--border);}
+  th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+  td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--dark);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#f8fafc;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-lain{background:#dcfce7;color:#15803d;}
+  .badge-pejabat{background:#fef9c3;color:#854d0e;}
+  .badge-rci{background:#fce7f3;color:#9d174d;}
+  .badge-apr{background:#dbeafe;color:#1e40af;}
+
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+  .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+  .empty-text{font-size:14px;font-weight:500;}
+
+  footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
+  @media(max-width:768px){
+    main{padding:16px;}
+    .grid-wide{grid-template-columns:1fr;}
+    header,.url-bar,.tabs{padding-left:16px;padding-right:16px;}
+    .login-box{margin:16px;padding:28px 24px;}
+  }
 </style>
 </head>
 <body>
 
+<!-- ══════════════ LOGIN PAGE ══════════════ -->
 <div id="loginPage">
   <div class="login-box">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="login-logo" alt="PDRM">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png"
+         class="login-logo" alt="PDRM" onerror="this.style.display='none'">
     <div class="login-title">SSPDRM MELAKA</div>
-    <div style="font-size:12px; color:var(--muted); margin-bottom:25px;">SISTEM PENUGASAN ANGGOTA</div>
+    <div class="login-sub">Sistem Penugasan Anggota</div>
+
     <div class="login-field">
       <label>Nama Pengguna</label>
-      <input type="text" id="loginUser" placeholder="Username">
+      <input type="text" id="loginUser" placeholder="Masukkan nama pengguna..." autocomplete="username" />
     </div>
     <div class="login-field">
       <label>Kata Laluan</label>
-      <input type="password" id="loginPass" placeholder="Password">
+      <input type="password" id="loginPass" placeholder="Masukkan kata laluan..." autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')doLogin()" />
     </div>
     <button class="btn-login" onclick="doLogin()">LOG MASUK</button>
-    <div id="loginError" style="color:red; font-size:12px; margin-top:10px; display:none;">❌ Kredensial tidak sah</div>
+    <div class="login-error" id="loginError">❌ Nama pengguna atau kata laluan tidak sah.</div>
+
+    <hr class="login-divider">
+    <div class="login-footer">Polis Diraja Malaysia · SSPDRM Melaka<br>Sistem ini adalah untuk kegunaan rasmi sahaja.</div>
   </div>
 </div>
 
+<!-- ══════════════ DASHBOARD PAGE ══════════════ -->
 <div id="dashboardPage">
-  <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" style="width:35px;">
-      <div class="header-title">SSPDRM MELAKA</div>
-    </div>
-    <button onclick="doLogout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:5px; font-size:12px;">Keluar</button>
-  </header>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('today')">Hari Ini</div>
-    <div class="tab" onclick="switchTab('d1')">M. Tengah</div>
-    <div class="tab" onclick="switchTab('d2')">Jasin</div>
-    <div class="tab" onclick="switchTab('d3')">Alor Gajah</div>
-    <div class="tab" onclick="switchTab('d4')">IPK</div>
+<header>
+  <div class="header-left">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png"
+         class="pdrm-logo" alt="PDRM" onerror="this.style.display='none'">
+    <div class="header-titles">
+      <div class="header-title">SSPDRM MELAKA</div>
+      <div class="header-sub">Sistem Penugasan Anggota · Dashboard</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="text-align:right;">
+      <div class="date-day" id="headerDate">—</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.6);" id="headerTime">—</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <div class="live-text" id="liveText">Live</div>
+    </div>
+    <div class="user-pill">
+      <span>👤</span>
+      <span id="userPillName">—</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
+  </div>
+</header>
+
+<div class="url-bar" id="urlBar" style="display:none;">
+  <label>📋 Apps Script URL:</label>
+  <input type="text" id="sheetUrl" placeholder="Paste Google Apps Script URL di sini..." />
+  <button class="btn-load" onclick="loadData()">Muat Data</button>
+  <span class="next-refresh" id="nextRefresh"></span>
+</div>
+
+<div class="tabs" id="tabBar">
+  <div class="tab active"  id="tab_btn_today" onclick="switchTab('today')">📅 Hari Ini (Semua)</div>
+  <div class="tab d1"      id="tab_btn_d1"    onclick="switchTab('d1')">🔴 Melaka Tengah</div>
+  <div class="tab d2"      id="tab_btn_d2"    onclick="switchTab('d2')">🟢 Jasin</div>
+  <div class="tab d3"      id="tab_btn_d3"    onclick="switchTab('d3')">🟡 Alor Gajah</div>
+  <div class="tab d4"      id="tab_btn_d4"    onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
+  <div class="tab hidden"  id="tab_btn_log"   onclick="switchTab('log')">📋 Log Masuk</div>
+</div>
+
+<main>
+  <div class="alert alert-error" id="alertError"></div>
+  <div class="alert alert-info"  id="alertInfo"></div>
+
+  <!-- TAB: HARI INI SEMUA -->
+  <div class="tab-content active" id="tab-today">
+    <div class="date-banner navy">
+      <div class="date-banner-left"><div class="date-icon">📅</div><div>
+        <div class="date-banner-title" id="today_title">—</div>
+        <div class="date-banner-sub">Semua daerah · Tarikh penugasan hari ini</div>
+      </div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="today_k1">—</div><div class="kpi-sub">Semua daerah</div><div class="kpi-bar navy"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏢</div><div class="kpi-label">Daerah Aktif</div><div class="kpi-value" id="today_k2">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="today_k3">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar green"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="today_k4">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar amber"></div></div>
+      <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="today_k5">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar red"></div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Daerah</div><div class="card-badge" id="today_b1">—</div></div><canvas id="today_c1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="today_c2"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota Bertugas Hari Ini</div><div class="card-badge" id="today_tb">—</div></div>
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table><thead><tr><th>#</th><th>Daerah</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Jam</th><th>Masa Mula</th></tr></thead>
+        <tbody id="today_table"><tr><td colspan="8" class="loading">Memuatkan data...</td></tr></tbody></table>
+      </div>
+    </div>
   </div>
 
-  <main>
-    <div id="alertError" class="alert alert-error"></div>
-    <div id="alertInfo" class="alert alert-info">Sedang memuatkan data...</div>
-
-    <div id="content-today">
-      <div class="date-banner navy">
-        <div>
-          <div style="font-family:'Rajdhani'; font-size:20px; font-weight:700; color:var(--gold);">RINGKASAN KESELURUHAN</div>
-          <div id="today-date-text" style="font-size:12px; opacity:0.8;">Memuatkan tarikh...</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="total-count" style="font-size:32px; font-weight:700; color:var(--gold);">0</div>
-          <div style="font-size:10px; opacity:0.8;">ANGGOTA</div>
-        </div>
+  <!-- TAB: MELAKA TENGAH -->
+  <div class="tab-content" id="tab-d1">
+    <div class="date-banner red">
+      <div class="date-banner-left"><div class="date-icon">🔴</div><div><div class="date-banner-title">Melaka Tengah</div><div class="date-banner-sub" id="d1_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d1_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d1_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar red"></div></div>
+      <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d1_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="d1_k3">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar green"></div></div>
+      <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="d1_k4">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar amber"></div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d1_c1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d1_c2"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Melaka Tengah</div><div class="card-badge" id="d1_tb">—</div></div>
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+        <tbody id="d1_table"><tr><td colspan="8" class="loading">Memuatkan data...</td></tr></tbody></table>
       </div>
+    </div>
+  </div>
 
-      <div class="kpi-row">
-        <div class="kpi"><div style="font-size:10px; color:var(--muted);">TENGAH</div><div id="kpi-d1" class="kpi-value">0</div></div>
-        <div class="kpi"><div style="font-size:10px; color:var(--muted);">JASIN</div><div id="kpi-d2" class="kpi-value">0</div></div>
-        <div class="kpi"><div style="font-size:10px; color:var(--muted);">A. GAJAH</div><div id="kpi-d3" class="kpi-value">0</div></div>
-        <div class="kpi"><div style="font-size:10px; color:var(--muted);">IPK</div><div id="kpi-d4" class="kpi-value">0</div></div>
-        <div class="kpi"><div style="font-size:10px; color:var(--muted);">JUMLAH JAM</div><div id="kpi-jam" class="kpi-value">0</div></div>
+  <!-- TAB: JASIN -->
+  <div class="tab-content" id="tab-d2">
+    <div class="date-banner green">
+      <div class="date-banner-left"><div class="date-icon">🟢</div><div><div class="date-banner-title">Jasin</div><div class="date-banner-sub" id="d2_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d2_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d2_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar green"></div></div>
+      <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d2_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="d2_k3">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar navy"></div></div>
+      <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="d2_k4">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar amber"></div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d2_c1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d2_c2"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Jasin</div><div class="card-badge" id="d2_tb">—</div></div>
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+        <tbody id="d2_table"><tr><td colspan="8" class="loading">Memuatkan data...</td></tr></tbody></table>
       </div>
+    </div>
+  </div>
 
-      <div class="grid-wide">
-        <div class="card">
-          <div style="font-weight:700; margin-bottom:15px; font-size:14px;">Taburan Penugasan</div>
-          <div class="chart-container"><canvas id="chartMain"></canvas></div>
-        </div>
-        <div class="card">
-          <div style="font-weight:700; margin-bottom:15px; font-size:14px;">Kategori Tugas</div>
-          <div class="chart-container"><canvas id="chartType"></canvas></div>
-        </div>
+  <!-- TAB: ALOR GAJAH -->
+  <div class="tab-content" id="tab-d3">
+    <div class="date-banner amber">
+      <div class="date-banner-left"><div class="date-icon">🟡</div><div><div class="date-banner-title">Alor Gajah</div><div class="date-banner-sub" id="d3_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d3_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d3_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar amber"></div></div>
+      <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d3_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="d3_k3">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar navy"></div></div>
+      <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="d3_k4">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar green"></div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d3_c1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d3_c2"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Alor Gajah</div><div class="card-badge" id="d3_tb">—</div></div>
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+        <tbody id="d3_table"><tr><td colspan="8" class="loading">Memuatkan data...</td></tr></tbody></table>
       </div>
+    </div>
+  </div>
 
-      <div class="table-wrap">
+  <!-- TAB: IPK SSPDRM -->
+  <div class="tab-content" id="tab-d4">
+    <div class="date-banner purple">
+      <div class="date-banner-left"><div class="date-icon">🟣</div><div><div class="date-banner-title">IPK SSPDRM</div><div class="date-banner-sub" id="d4_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d4_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d4_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar navy"></div></div>
+      <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d4_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="d4_k3">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar green"></div></div>
+      <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="d4_k4">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar red"></div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d4_c1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d4_c2"></canvas></div>
+    </div>
+    <div class="table-wrap">
+      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — IPK SSPDRM</div><div class="card-badge" id="d4_tb">—</div></div>
+      <div style="overflow-x:auto;margin-top:12px;">
+        <table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+        <tbody id="d4_table"><tr><td colspan="8" class="loading">Memuatkan data...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: LOGIN LOG (ADMIN ONLY) -->
+  <div class="tab-content" id="tab-log">
+    <div class="date-banner navy">
+      <div class="date-banner-left"><div class="date-icon">📋</div><div>
+        <div class="date-banner-title">Log Masuk Pengguna</div>
+        <div class="date-banner-sub">Rekod semua aktiviti log masuk dan log keluar</div>
+      </div></div>
+      <div class="date-banner-count">
+        <div class="date-banner-num" id="log_count">—</div>
+        <div class="date-banner-label">Jumlah sesi</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-icon">👤</div><div class="kpi-label">Jumlah Sesi</div><div class="kpi-value" id="log_k1">—</div><div class="kpi-sub">Semua masa</div><div class="kpi-bar navy"></div></div>
+      <div class="kpi"><div class="kpi-icon">📅</div><div class="kpi-label">Sesi Hari Ini</div><div class="kpi-value" id="log_k2">—</div><div class="kpi-sub">Login hari ini</div><div class="kpi-bar gold"></div></div>
+      <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Pengguna Unik</div><div class="kpi-value" id="log_k3">—</div><div class="kpi-sub">Nama berbeza</div><div class="kpi-bar green"></div></div>
+      <div class="kpi"><div class="kpi-icon">🔑</div><div class="kpi-label">Admin Login</div><div class="kpi-value" id="log_k4">—</div><div class="kpi-sub">Sesi admin</div><div class="kpi-bar red"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Rekod Log Masuk</div>
+        <button onclick="clearLog()" style="background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;">🗑️ Padam Log</button>
+      </div>
+      <div style="overflow-x:auto;">
         <table>
-          <thead>
-            <tr>
-              <th>Nama & No. Badan</th>
-              <th>Daerah</th>
-              <th>Tugasan</th>
-              <th>Jam</th>
-            </tr>
-          </thead>
-          <tbody id="mainTableBody">
-            <tr><td colspan="4" style="text-align:center;">Memuatkan data...</td></tr>
-          </tbody>
+          <thead><tr>
+            <th>#</th><th>Nama Pengguna</th><th>Peranan</th><th>Tab Diakses</th>
+            <th>Tarikh Login</th><th>Masa Login</th><th>Masa Logout</th><th>Tempoh</th>
+          </tr></thead>
+          <tbody id="log_table"><tr><td colspan="8" class="loading">Tiada rekod log</td></tr></tbody>
         </table>
       </div>
     </div>
-  </main>
-  <footer>Polis Diraja Malaysia &copy; SSPDRM Melaka</footer>
-</div>
+  </div>
+
+</main>
+<footer>Polis Diraja Malaysia &nbsp;·&nbsp; SSPDRM Melaka &nbsp;·&nbsp; Sistem Penugasan Anggota &nbsp;·&nbsp; <span id="footerRefresh">—</span></footer>
+</div><!-- end dashboardPage -->
 
 <script>
-const USERS = { 'admin': 'admin123', 'sspdrm': 'melaka2024' };
-const API_URL = "https://script.google.com/macros/s/AKfycbzL2Yed3Pt6Xu9juCPOHK9vNOzWw3bAu_iAeZXprQySxrICySxKJuX9ua1LnO7FdKa4/exec";
+// ══════════════════════════════════════════
+// USER ACCOUNTS
+// username → { password, role, tab }
+// role: 'admin' = sees all tabs
+// role: 'daerah' = sees only their tab
+// ══════════════════════════════════════════
+const USERS = {
+  'admin':         { password: 'admin123',  role: 'admin',  tab: null },
+  'rosziah':       { password: 'asp1528',   role: 'admin',  tab: null },
+  'melakatengah':  { password: 'mt1234',    role: 'daerah', tab: 'd1' },
+  'murugan':       { password: 'asp1216',   role: 'daerah', tab: 'd1' },
+  'wong':          { password: 'insp1654',  role: 'daerah', tab: 'd1' },
+  'jasin':         { password: 'jasin1234', role: 'daerah', tab: 'd2' },
+  'kamala':        { password: 'INSP1655',  role: 'daerah', tab: 'd2' },
+  'alorgajah':     { password: 'ag1234',    role: 'daerah', tab: 'd3' },
+  'lee':           { password: 'asp1518',   role: 'daerah', tab: 'd3' },
+  'shaharil':      { password: 'insp1214',  role: 'daerah', tab: 'd3' },
+  'ipksspdrm':     { password: 'ipk1234',   role: 'daerah', tab: 'd4' },
+};
 
-let allData = [];
-let myCharts = {};
+// Tab labels
+const TAB_LABELS = {
+  today: '📅 Hari Ini (Semua)',
+  d1: '🔴 Melaka Tengah',
+  d2: '🟢 Jasin',
+  d3: '🟡 Alor Gajah',
+  d4: '🟣 IPK SSPDRM',
+};
 
-function doLogin() {
-  const u = document.getElementById('loginUser').value;
-  const p = document.getElementById('loginPass').value;
-  if (USERS[u] && USERS[u] === p) {
-    document.getElementById('loginPage').style.display = 'none';
-    document.getElementById('dashboardPage').style.display = 'block';
-    loadData();
+const BALAI_COLS    = [2,4,6,8];
+const NAMA_COLS     = [3,5,7,9];
+const BERTUGAS_COLS = [10,11];
+const DEFAULT_API = "https://script.google.com/macros/s/AKfycbzL2Yed3Pt6Xu9juCPOHK9vNOzWw3bAu_iAeZXprQySxrICySxKJuX9ua1LnO7FdKa4/exec";
+const DAERAH_MAP = {
+  d1: 'MELAKA TENGAH',
+  d2: 'JASIN',
+  d3: 'ALOR GAJAH',
+  d4: 'IPK SSPDRM'
+};
+const COLORS = ['#003087','#0a3fa8','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#dc2626','#16a34a','#d97706','#7c3aed'];
+
+let allData=[], charts={}, countdownSec=1800, countdownTimer;
+let currentUser=null;
+
+// ── LOGIN LOG (stored in localStorage)
+function getLogs(){ try{ return JSON.parse(localStorage.getItem('loginLogs')||'[]'); }catch(e){ return []; } }
+function saveLogs(logs){ localStorage.setItem('loginLogs', JSON.stringify(logs)); }
+
+function recordLogin(user){
+  const logs = getLogs();
+  const now = new Date();
+  const entry = {
+    id: Date.now(),
+    username: user.username,
+    role: user.role,
+    tab: user.tab ? TAB_LABELS[user.tab] : 'Semua Tab',
+    loginDate: now.toLocaleDateString('ms-MY'),
+    loginTime: now.toLocaleTimeString('ms-MY'),
+    loginTs: now.getTime(),
+    logoutTime: '—',
+    logoutTs: null,
+    duration: '—'
+  };
+  logs.unshift(entry); // newest first
+  if(logs.length > 200) logs.pop(); // keep max 200 entries
+  saveLogs(logs);
+  return entry.id;
+}
+
+function recordLogout(loginId){
+  const logs = getLogs();
+  const entry = logs.find(l=>l.id===loginId);
+  if(entry){
+    const now = new Date();
+    entry.logoutTime = now.toLocaleTimeString('ms-MY');
+    entry.logoutTs = now.getTime();
+    const diffMs = now.getTime() - entry.loginTs;
+    const diffMin = Math.floor(diffMs/60000);
+    const diffSec = Math.floor((diffMs%60000)/1000);
+    entry.duration = diffMin+'m '+diffSec+'s';
+    saveLogs(logs);
+  }
+}
+
+function renderLogTab(){
+  const logs = getLogs();
+  const today = new Date().toLocaleDateString('ms-MY');
+  const todayLogs = logs.filter(l=>l.loginDate===today);
+  const uniqueUsers = new Set(logs.map(l=>l.username)).size;
+  const adminSessions = logs.filter(l=>l.role==='admin').length;
+
+  document.getElementById('log_count').textContent = logs.length;
+  document.getElementById('log_k1').textContent = logs.length;
+  document.getElementById('log_k2').textContent = todayLogs.length;
+  document.getElementById('log_k3').textContent = uniqueUsers;
+  document.getElementById('log_k4').textContent = adminSessions;
+
+  const tbody = document.getElementById('log_table');
+  if(!logs.length){
+    tbody.innerHTML='<tr><td colspan="8" class="empty-state" style="text-align:center;padding:32px;color:var(--muted);">Tiada rekod log</td></tr>';
+    return;
+  }
+  tbody.innerHTML = logs.map((l,i)=>`
+    <tr>
+      <td style="color:var(--muted);font-size:11px;">${i+1}</td>
+      <td><strong>${l.username}</strong></td>
+      <td><span class="badge ${l.role==='admin'?'badge-rci':'badge-apr'}">${l.role==='admin'?'Admin':'Daerah'}</span></td>
+      <td style="font-size:12px;">${l.tab}</td>
+      <td style="font-size:12px;">${l.loginDate}</td>
+      <td><strong>${l.loginTime}</strong></td>
+      <td style="font-size:12px;">${l.logoutTime}</td>
+      <td style="font-size:12px;color:var(--muted);">${l.duration}</td>
+    </tr>`).join('');
+}
+
+function clearLog(){
+  if(confirm('Padam semua rekod log masuk?')){
+    localStorage.removeItem('loginLogs');
+    renderLogTab();
+  }
+}
+
+// ── LOGIN
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim().toLowerCase();
+  const p=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+
+  if(USERS[u] && USERS[u].password===p){
+    errEl.style.display='none';
+    currentUser={username:u, ...USERS[u]};
+    currentUser.loginId = recordLogin(currentUser);
+    sessionStorage.setItem('dashUser', JSON.stringify(currentUser));
+    showDashboard();
   } else {
-    document.getElementById('loginError').style.display = 'block';
+    errEl.style.display='block';
+    document.getElementById('loginPass').value='';
   }
 }
 
-function doLogout() {
-  location.reload();
-}
+function showDashboard(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('dashboardPage').style.display='block';
+  document.getElementById('userPillName').textContent=currentUser.username.toUpperCase();
 
-async function loadData() {
-  const info = document.getElementById('alertInfo');
-  const err = document.getElementById('alertError');
-  info.style.display = 'block';
-  err.style.display = 'none';
-
-  try {
-    // PENTING UNTUK MOBILE: mode cors dan redirect follow
-    const resp = await fetch(API_URL, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      redirect: 'follow'
+  // Show/hide tabs based on role
+  if(currentUser.role==='admin'){
+    // Admin sees all tabs, show URL bar
+    document.getElementById('urlBar').style.display='flex';
+    ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.remove('hidden'));
+    // Only username 'admin' can see the log tab
+    if(currentUser.username==='admin'){
+      document.getElementById('tab_btn_log').classList.remove('hidden');
+    } else {
+      document.getElementById('tab_btn_log').classList.add('hidden');
+    }
+    switchTab('today');
+  } else {
+    // Daerah user sees only their tab, hide URL bar (use saved URL)
+    document.getElementById('urlBar').style.display='none';
+    // Hide all tabs except their daerah
+    ['today','d1','d2','d3','d4'].forEach(t=>{
+      const el=document.getElementById('tab_btn_'+t);
+      if(t===currentUser.tab){ el.classList.remove('hidden'); }
+      else { el.classList.add('hidden'); }
     });
+    switchTab(currentUser.tab);
+  }
 
-    if (!resp.ok) throw new Error("Gagal menyambung ke pelayan");
+  loadData();
+}
+
+function doLogout(){
+  if(currentUser && currentUser.loginId) recordLogout(currentUser.loginId);
+  sessionStorage.removeItem('dashUser');
+  currentUser=null;
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('dashboardPage').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+// ── CLOCK
+function updateClock(){
+  const now=new Date();
+  const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+  const months=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogs','Sep','Okt','Nov','Dis'];
+  document.getElementById('headerDate').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('headerTime').textContent=now.toLocaleTimeString('ms-MY');
+}
+setInterval(updateClock,1000); updateClock();
+
+// ── COUNTDOWN
+function startCountdown(){
+  clearInterval(countdownTimer); countdownSec=1800;
+  countdownTimer=setInterval(()=>{
+    countdownSec--;
+    if(countdownSec<=0){loadData();return;}
+    const m=Math.floor(countdownSec/60),s=countdownSec%60;
+    const el=document.getElementById('nextRefresh');
+    if(el) el.textContent='Auto-refresh dalam '+m+'m '+(s<10?'0'+s:s)+'s';
+  },1000);
+}
+
+// ── DATE HELPERS
+function getTodayStr(){const n=new Date();return n.getDate()+'/'+(n.getMonth()+1)+'/'+n.getFullYear();}
+function getTodayFull(){
+  const n=new Date();
+  const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+  const months=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+  return days[n.getDay()]+', '+n.getDate()+' '+months[n.getMonth()]+' '+n.getFullYear();
+}
+function normaliseDate(str){
+  if(!str) return '';
+  str = str.trim();
+  // Handle ISO format: 2026-03-13T16:00:00.000Z → use UTC+8 (Malaysia)
+  if(str.includes('T')){
+    const d = new Date(str);
+    // Adjust to Malaysia time (UTC+8)
+    const myt = new Date(d.getTime() + 8*60*60*1000);
+    return myt.getUTCDate()+'/'+(myt.getUTCMonth()+1)+'/'+myt.getUTCFullYear();
+  }
+  // Handle YYYY-MM-DD
+  if(str.includes('-')){
+    const p=str.split('-');
+    if(p.length===3) return parseInt(p[2])+'/'+parseInt(p[1])+'/'+p[0];
+  }
+  // Handle D/M/YYYY or DD/MM/YYYY
+  const p=str.split('/');
+  if(p.length===3) return parseInt(p[0])+'/'+parseInt(p[1])+'/'+p[2];
+  return str;
+}
+
+// ── EXTRACT TIME FROM TIMESTAMP e.g. "13/3/2026 14:35:00" → "14:35"
+function extractTime(ts){
+  if(!ts) return '—';
+  const parts = ts.trim().split(' ');
+  if(parts.length >= 2){
+    const t = parts[1].split(':');
+    if(t.length >= 2) return t[0]+':'+t[1];
+  }
+  return '—';
+}
+
+// ── NORMALISE DAERAH for matching (uppercase, trim, remove extra spaces)
+function normDaerah(s){ return String(s||'').toUpperCase().replace(/\s+/g,' ').trim(); }
+
+// ── EXPAND ROWS - combine all balai cols (2,4,6,8) and nama cols (3,5,7,9)
+function expandRows(rows){
+  const out=[];
+  rows.forEach(row=>{
+    const timestamp = String(row[0]||'');
+    const daerah    = normDaerah(row[1]);
+    const bertugas  = String(row[10]||'').trim();
+    const pejawatan = String(row[12]||'').trim();
+    const jantina   = String(row[13]||'').trim();
+    const pangkat   = String(row[14]||'').trim();
+    const tarikh    = String(row[15]||'').trim();
+    const jenis     = String(row[16]||'').trim();
+    const jam  = parseFloat(row[18])||0;
+    const lain = String(row[19]||'').trim();    
+    const masa     = String(row[22]||'').trim();
     
-    const data = await resp.json();
-    allData = data;
-    processAndRender(data);
-    info.style.display = 'none';
-  } catch (e) {
-    info.style.display = 'none';
-    err.style.display = 'block';
-    err.textContent = "Ralat: " + e.message + ". Sila pastikan sambungan internet stabil.";
-    console.error(e);
+    // Combine: take first non-empty value from balai cols C,E,G,I (2,4,6,8)
+    const balai = [2,4,6,8].map(i=>String(row[i]||'').trim()).find(v=>v) || '—';
+    // Combine: take first non-empty value from nama cols D,F,H,J (3,5,7,9)
+    const nama  = [3,5,7,9].map(i=>String(row[i]||'').trim()).find(v=>v) || '';
+
+    if(!daerah) return;
+    if(!nama && balai==='—') return; // skip completely empty rows
+
+    out.push({timestamp,daerah,balai,nama:nama||balai,bertugas,pejawatan,jantina,pangkat,jenis,jam,masa,tarikh,lain});
+  });
+  return out;
+}
+
+// ── LOAD DATA
+async function loadData(){
+  const urlInput=document.getElementById('sheetUrl');
+  let url=urlInput?urlInput.value.trim():'';
+
+  // Daerah users use saved URL
+  if(!url) url=localStorage.getItem('dashboardUrl')||'';
+  if(!url){showAlert('error','Sila masukkan Apps Script URL anda.');return;}
+
+  showAlert('info','⏳ Memuatkan data...');showAlert('error','');
+
+  const methods=[
+    ()=>fetch(url).then(r=>r.json()),
+    ()=>fetch(PROXY+encodeURIComponent(url)).then(r=>r.json()),
+    ()=>fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url)).then(r=>r.json()),
+  ];
+  let json=null;
+  for(const m of methods){try{json=await m();if(json&&json.rows)break;}catch(e){json=null;}}
+  if(!json||!json.rows){showAlert('error','❌ Gagal muat data. Semak URL Apps Script anda.');showAlert('info','');return;}
+
+  allData=expandRows(json.rows);
+  if(!allData.length){showAlert('error','❌ Tiada data dalam sheet.');return;}
+
+  // Debug: show unique daerah values found
+  if(currentUser&&currentUser.role==='admin'){
+    const uniqueDaerah=[...new Set(allData.map(d=>d.daerah))].join(' · ');
+    console.log('Daerah dalam sheet:', uniqueDaerah);
+    showAlert('info','✅ '+allData.length+' rekod dimuatkan · Daerah: '+uniqueDaerah);
+  }
+
+  showAlert('info','');showAlert('error','');
+  const now=new Date().toLocaleTimeString('ms-MY');
+  document.getElementById('liveText').textContent='Dikemaskini '+now;
+  document.getElementById('footerRefresh').textContent='Terakhir dikemaskini: '+now;
+  if(urlInput&&urlInput.value.trim()) localStorage.setItem('dashboardUrl',urlInput.value.trim());
+
+  renderAll();
+  startCountdown();
+}
+
+function showAlert(type,msg){
+  const el=document.getElementById(type==='error'?'alertError':'alertInfo');
+  if(el){el.textContent=msg;el.style.display=msg?'block':'none';}
+}
+
+// ── TABS
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>{
+    const id=t.id.replace('tab_btn_','');
+    t.classList.toggle('active',id===name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  const tc=document.getElementById('tab-'+name);
+  if(tc)tc.classList.add('active');
+  if(name==='log') renderLogTab();
+}
+
+// ── RENDER ALL
+function renderAll(){
+  const today=getTodayStr();
+  const todayFull=getTodayFull();
+  const todayData=allData.filter(r=>normaliseDate(r.tarikh)===today);
+
+  // (debug removed)
+
+  // Only render tabs the user has access to
+  const tabsToRender = currentUser.role==='admin'
+    ? ['today','d1','d2','d3','d4']
+    : [currentUser.tab];
+
+  if(tabsToRender.includes('today')) renderTab('today',todayData,todayFull,true);
+
+  ['d1','d2','d3','d4'].forEach(key=>{
+    if(!tabsToRender.includes(key))return;
+    const daerahName=DAERAH_MAP[key];
+    const data=todayData.filter(r=>normDaerah(r.daerah)===daerahName);
+    renderTab(key,data,todayFull,false);
+  });
+}
+
+function renderTab(key,data,dateStr,isAll){
+  const pre=key+'_';
+  if(document.getElementById(pre+'title'))document.getElementById(pre+'title').textContent=dateStr;
+  if(document.getElementById(pre+'sub'))document.getElementById(pre+'sub').textContent=dateStr;
+  document.getElementById(pre+'count').textContent=data.length;
+  const tj=data.reduce((s,d)=>s+(d.jam||0),0);
+  document.getElementById(pre+'k1').textContent=data.length;
+  if(isAll){
+    document.getElementById(pre+'k2').textContent=new Set(data.map(d=>d.daerah).filter(Boolean)).size;
+    document.getElementById(pre+'k3').textContent=tj;
+    document.getElementById(pre+'k4').textContent=new Set(data.map(d=>d.balai).filter(Boolean)).size;
+    document.getElementById(pre+'k5').textContent=new Set(data.map(d=>d.jenis).filter(Boolean)).size;
+    document.getElementById(pre+'b1').textContent=data.length+' rekod';
+  } else {
+    document.getElementById(pre+'k2').textContent=tj;
+    document.getElementById(pre+'k3').textContent=new Set(data.map(d=>d.balai).filter(Boolean)).size;
+    document.getElementById(pre+'k4').textContent=new Set(data.map(d=>d.jenis).filter(Boolean)).size;
+  }
+  document.getElementById(pre+'tb').textContent=data.length+' anggota';
+
+  if(isAll){
+    const byD=countBy(data,'daerah');
+    makeChart(pre+'c1','bar',Object.keys(byD),Object.values(byD),COLORS.slice(0,Object.keys(byD).length));
+  } else {
+    const byB=countBy(data,'balai');
+    const labels=Object.keys(byB).map(l=>l.replace('BALAI POLIS ',''));
+    makeChart(pre+'c1','bar',labels,Object.values(byB),COLORS.slice(0,Object.keys(byB).length));
+  }
+  const byT=countBy(data,'jenis');
+  makeChart(pre+'c2','doughnut',Object.keys(byT),Object.values(byT),COLORS.slice(0,Object.keys(byT).length));
+
+  const tbody=document.getElementById(pre+'table');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan hari ini</div></div></td></tr>';
+    return;
+  }
+  if(isAll){
+    tbody.innerHTML=data.map((r,i)=>`
+      <tr>
+        <td style="color:var(--muted);font-size:11px;">${i+1}</td>
+        <td><strong style="color:var(--navy)">${r.daerah}</strong></td>
+        <td><strong>${r.nama}</strong></td>
+        <td style="font-size:12px;">${r.balai.replace('BALAI POLIS ','')}</td>
+        <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ','')}</td>
+        <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis||'—'}</span></td>
+        <td><strong>${r.jam||'—'}</strong></td>
+        <td>${r.masa||'—'}</td>
+      </tr>`).join('');
+  } else {
+    tbody.innerHTML=data.map((r,i)=>`
+      <tr>
+        <td style="color:var(--muted);font-size:11px;">${i+1}</td>
+        <td style="font-size:12px;">${r.pangkat||'—'}</td>
+        <td><strong>${r.nama}</strong></td>
+        <td style="font-size:12px;">${r.balai.replace('BALAI POLIS ','')}</td>
+        <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ','')}</td>
+        <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis||'—'}</span></td>
+        <td><strong>${r.jam||'—'}</strong></td>
+        <td>${r.masa||'—'}</td>
+        <td>${r.jantina||'—'}</td>
+        <td>${r.pejawatan||'—'}</td>
+      </tr>`).join('');
   }
 }
 
-function processAndRender(data) {
-  // Update Tarikh
-  document.getElementById('today-date-text').textContent = new Date().toLocaleDateString('ms-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  
-  // Statistik Ringkas
-  const stats = { d1: 0, d2: 0, d3: 0, d4: 0, jam: 0 };
-  const typeMap = {};
-  let tableHtml = '';
+function countBy(data,key){const m={};data.forEach(d=>{const v=d[key]||'Lain';m[v]=(m[v]||0)+1;});return m;}
 
-  data.forEach(row => {
-    // Anda perlu sesuaikan index [0], [1] mengikut struktur JSON Google Script anda
-    const daerah = (row.daerah || "").toUpperCase();
-    const nama = row.nama || "Tiada Nama";
-    const tugas = row.tugasan || "-";
-    const jam = parseFloat(row.jam) || 0;
-
-    if(daerah.includes("TENGAH")) stats.d1++;
-    else if(daerah.includes("JASIN")) stats.d2++;
-    else if(daerah.includes("GAJAH")) stats.d3++;
-    else stats.d4++;
-    
-    stats.jam += jam;
-    typeMap[tugas] = (typeMap[tugas] || 0) + 1;
-
-    tableHtml += `<tr>
-      <td><div style="font-weight:600;">${nama}</div><div style="font-size:10px; color:gray;">${row.no_badan || ''}</div></td>
-      <td>${daerah}</td>
-      <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:10px;">${tugas}</span></td>
-      <td>${jam}h</td>
-    </tr>`;
-  });
-
-  document.getElementById('total-count').textContent = data.length;
-  document.getElementById('kpi-d1').textContent = stats.d1;
-  document.getElementById('kpi-d2').textContent = stats.d2;
-  document.getElementById('kpi-d3').textContent = stats.d3;
-  document.getElementById('kpi-d4').textContent = stats.d4;
-  document.getElementById('kpi-jam').textContent = stats.jam.toFixed(0);
-  document.getElementById('mainTableBody').innerHTML = tableHtml || '<tr><td colspan="4" style="text-align:center;">Tiada data penugasan hari ini.</td></tr>';
-
-  renderCharts(stats, typeMap);
-}
-
-function renderCharts(stats, typeMap) {
-  // Chart 1: Daerah
-  initChart('chartMain', 'bar', ['Tengah', 'Jasin', 'A. Gajah', 'IPK'], [stats.d1, stats.d2, stats.d3, stats.d4], 'Anggota');
-  
-  // Chart 2: Jenis Tugas
-  initChart('chartType', 'doughnut', Object.keys(typeMap), Object.values(typeMap), 'Tugas');
-}
-
-function initChart(id, type, labels, data, labelName) {
-  if (myCharts[id]) myCharts[id].destroy();
-  const ctx = document.getElementById(id).getContext('2d');
-  myCharts[id] = new Chart(ctx, {
-    type: type,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: labelName,
-        data: data,
-        backgroundColor: ['#003087', '#16a34a', '#d97706', '#dc2626', '#7c3aed', '#64748b'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
-      }
+function makeChart(id,type,labels,values,colors){
+  if(charts[id])charts[id].destroy();
+  const el=document.getElementById(id);if(!el)return;
+  const ctx=el.getContext('2d');
+  charts[id]=new Chart(ctx,{type,
+    data:{labels,datasets:[{data:values,
+      backgroundColor:type==='line'?'rgba(0,48,135,0.08)':colors,
+      borderColor:type==='line'?'#003087':colors,
+      borderWidth:type==='line'?2:0,fill:type==='line',tension:.4,
+      pointRadius:4,pointBackgroundColor:'#003087'
+    }]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{
+        legend:{display:type==='doughnut',position:'right',labels:{font:{family:'Inter',size:11},padding:10,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}
+      },
+      scales:type!=='doughnut'?{
+        x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},maxRotation:40}},
+        y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Inter',size:10}}}
+      }:{}
     }
   });
 }
 
-function switchTab(t) {
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(tab => tab.classList.remove('active'));
-  event.target.classList.add('active');
-  // Logic filter data mengikut daerah boleh ditambah di sini
+function badgeClass(j){
+  if(!j)return'';const u=j.toUpperCase();
+  if(u.includes('LAIN'))return'badge-lain';
+  if(u.includes('PERTANYAAN')||u.includes('PEJABAT'))return'badge-pejabat';
+  if(u.includes('RCI'))return'badge-rci';
+  return'badge-apr';
 }
+
+// ── ON LOAD: check session
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=sessionStorage.getItem('dashUser');
+  if(saved){
+    currentUser=JSON.parse(saved);
+    showDashboard();
+  }
+});
 </script>
 </body>
 </html>
