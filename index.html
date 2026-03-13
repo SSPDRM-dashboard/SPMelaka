@@ -501,17 +501,31 @@ function normaliseDate(str){
   return str;
 }
 
+// ── EXTRACT TIME FROM TIMESTAMP e.g. "13/3/2026 14:35:00" → "14:35"
+function extractTime(ts){
+  if(!ts) return '—';
+  const parts = ts.trim().split(' ');
+  if(parts.length >= 2){
+    const t = parts[1].split(':');
+    if(t.length >= 2) return t[0]+':'+t[1];
+  }
+  return '—';
+}
+
+// ── NORMALISE DAERAH for matching (uppercase, trim, remove extra spaces)
+function normDaerah(s){ return String(s||'').toUpperCase().replace(/\s+/g,' ').trim(); }
+
 // ── EXPAND ROWS
 function expandRows(rows){
   const out=[];
   rows.forEach(row=>{
     const timestamp=String(row[0]||'');
-    const daerah=String(row[1]||'').trim().toUpperCase();
+    const daerah=normDaerah(row[1]);
     const bertugas=BERTUGAS_COLS.map(i=>String(row[i]||'').trim()).filter(Boolean).join(' / ');
     const pejawatan=String(row[12]||'');
     const jenis=String(row[16]||'');
     const jam=parseFloat(row[18])||0;
-    const masa=String(row[17]||'');
+    const masa=String(row[17]||'').trim(); // MASA BERMULA TUGAS column 17
     const tarikh=String(row[15]||'').trim();
     BALAI_COLS.forEach((bIdx,i)=>{
       const balai=String(row[bIdx]||'').trim();
@@ -545,6 +559,13 @@ async function loadData(){
 
   allData=expandRows(json.rows);
   if(!allData.length){showAlert('error','❌ Tiada data dalam sheet.');return;}
+
+  // Debug: show unique daerah values found
+  if(currentUser&&currentUser.role==='admin'){
+    const uniqueDaerah=[...new Set(allData.map(d=>d.daerah))].join(' · ');
+    console.log('Daerah dalam sheet:', uniqueDaerah);
+    showAlert('info','✅ '+allData.length+' rekod dimuatkan · Daerah: '+uniqueDaerah);
+  }
 
   showAlert('info','');showAlert('error','');
   const now=new Date().toLocaleTimeString('ms-MY');
@@ -587,8 +608,9 @@ function renderAll(){
 
   ['d1','d2','d3','d4'].forEach(key=>{
     if(!tabsToRender.includes(key))return;
-    const daerahName=DAERAH_MAP[key];
-    const data=todayData.filter(r=>r.daerah===daerahName||r.daerah.includes(daerahName.split(' ')[0]));
+    const daerahName=DAERAH_MAP[key]; // e.g. "MELAKA TENGAH"
+    // Match: exact uppercase match (both sides normalised)
+    const data=todayData.filter(r=>normDaerah(r.daerah)===daerahName);
     renderTab(key,data,todayFull,false);
   });
 }
