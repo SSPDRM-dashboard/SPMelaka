@@ -104,6 +104,23 @@
   .empty-icon{font-size:40px;margin-bottom:12px;} .empty-text{font-size:14px;font-weight:500;}
   footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
   @media(max-width:768px){main{padding:16px;}.grid-wide{grid-template-columns:1fr;}header,.url-bar,.tabs{padding-left:16px;padding-right:16px;}.login-box{margin:16px;padding:28px 24px;}}
+  .pngs-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;display:inline-block;min-width:380px;}
+  .pngs-table{border-collapse:collapse;font-size:13px;width:100%;}
+  .pngs-table th{padding:10px 18px;font-size:11px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .pngs-table th.th-peg{background:#f4a261;min-width:70px;}
+  .pngs-table th.th-apr{background:#4a90d9;min-width:70px;}
+  .pngs-table th.th-title{background:#c8c8c8;text-align:left;color:#333;padding-left:16px;}
+  .pngs-table td{padding:9px 18px;border-bottom:1px solid #e8e8c8;background:#fffde8;}
+  .pngs-table td.td-label{font-weight:600;color:#333;background:#fffde8;}
+  .pngs-table td.td-num{text-align:center;font-weight:600;color:var(--dark);background:#fffde8;}
+  .pngs-table tr.pngs-total td{background:#d0d0d0;font-weight:700;color:#222;padding:10px 18px;border-top:2px solid #aaa;}
+  .pngs-table tr.pngs-total td.td-num-total{text-align:center;}
+  .pngs-table tr.pngs-jumlah-header td{background:#c8c8c8;font-weight:700;color:#222;padding:8px 18px;}
+  .pngs-table tr.pngs-jumlah-header td.td-num-h{text-align:center;background:#f4a261;color:white;}
+  .pngs-table tr.pngs-jumlah-header td.td-num-h2{text-align:center;background:#4a90d9;color:white;}
+  .pngs-table tr:last-child td{border-bottom:none;}
+  .pngs-table tr.pngs-grand td{background:#d0d0d0;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#222;padding:10px 18px;}
+  .pngs-table tr.pngs-grand td.td-num-g{text-align:center;font-family:'Rajdhani',sans-serif;font-size:17px;}
 </style>
 </head>
 <body>
@@ -154,7 +171,7 @@
   <div class="alert alert-info"  id="alertInfo"></div>
 
   <div class="tab-content active" id="tab-today">
-    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📅</div><div><div class="date-banner-title" id="today_title">—</div><div class="date-banner-sub">Semua daerah · Tarikh penugasan hari ini</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div></div>
+    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📅</div><div><div class="date-banner-title" id="today_title">—</div><div class="date-banner-sub">Semua daerah · Pilih tarikh untuk semak penugasan</div></div></div><div class="date-banner-count" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;"><div style="display:flex;align-items:center;gap:8px;"><label style="font-size:11px;color:rgba(255,255,255,0.75);white-space:nowrap;">📆 Pilih Tarikh:</label><input type="date" id="todayDatePicker" style="border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;padding:5px 10px;font-size:13px;font-family:'Inter',sans-serif;background:rgba(255,255,255,0.15);color:white;outline:none;cursor:pointer;" onchange="onDatePickerChange()"/></div><div style="text-align:right;"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div></div></div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="today_k1">—</div><div class="kpi-sub">Semua daerah</div><div class="kpi-bar navy"></div></div>
       <div class="kpi"><div class="kpi-icon">🏢</div><div class="kpi-label">Daerah Aktif</div><div class="kpi-value" id="today_k2">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar gold"></div></div>
@@ -164,7 +181,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Daerah</div><div class="card-badge" id="today_b1">—</div></div><canvas id="today_c1"></canvas></div>
-      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="today_c2"></canvas></div>
+      <div id="today_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
     </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota Bertugas Hari Ini</div><div class="card-badge" id="today_tb">—</div></div>
@@ -182,7 +199,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d1_c1"></canvas></div>
-      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d1_c2"></canvas></div>
+      <div id="d1_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
     </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Melaka Tengah</div><div class="card-badge" id="d1_tb">—</div></div>
@@ -200,7 +217,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d2_c1"></canvas></div>
-      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d2_c2"></canvas></div>
+      <div id="d2_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
     </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Jasin</div><div class="card-badge" id="d2_tb">—</div></div>
@@ -218,7 +235,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d3_c1"></canvas></div>
-      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d3_c2"></canvas></div>
+      <div id="d3_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
     </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Alor Gajah</div><div class="card-badge" id="d3_tb">—</div></div>
@@ -236,7 +253,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d4_c1"></canvas></div>
-      <div class="card"><div class="card-header"><div class="card-title">Jenis Tugasan</div></div><canvas id="d4_c2"></canvas></div>
+      <div id="d4_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
     </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — IPK SSPDRM</div><div class="card-badge" id="d4_tb">—</div></div>
@@ -398,7 +415,7 @@ function expandRows(rows){
     const jantina=String(row[13]||'').trim();
     const pangkat=String(row[14]||'').trim();
     const tarikh=String(row[15]||'').trim();
-    const jenis=String(row[16]||'').trim();
+    const jenis=normalizeJenis(String(row[16]||'').trim());
     const masa=formatTime(row[22]);
     const jam=parseFloat(row[18])||0;
     const lain=String(row[19]||'').trim();
@@ -442,11 +459,44 @@ function switchTab(name){
   if(name==='log') renderLogTab();
 }
 
+function getSelectedDateStr(){
+  const picker=document.getElementById('todayDatePicker');
+  if(picker&&picker.value){
+    const p=picker.value.split('-');
+    return parseInt(p[2])+'/'+parseInt(p[1])+'/'+p[0];
+  }
+  return getTodayStr();
+}
+
+function getSelectedDateFull(){
+  const picker=document.getElementById('todayDatePicker');
+  if(picker&&picker.value){
+    const p=picker.value.split('-');
+    const d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+    const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+    const months=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+    return days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
+  }
+  return getTodayFull();
+}
+
+function onDatePickerChange(){
+  if(!allData.length) return;
+  const selStr=getSelectedDateStr(), selFull=getSelectedDateFull();
+  const selData=allData.filter(r=>normaliseDate(r.tarikh)===selStr);
+  renderTab('today',selData,selFull,true);
+}
+
 function renderAll(){
   const today=getTodayStr(), todayFull=getTodayFull();
+  // Set date picker default to today
+  const picker=document.getElementById('todayDatePicker');
+  if(picker&&!picker.value){ const n=new Date(); picker.value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+  const selStr=getSelectedDateStr(), selFull=getSelectedDateFull();
+  const selData=allData.filter(r=>normaliseDate(r.tarikh)===selStr);
   const todayData=allData.filter(r=>normaliseDate(r.tarikh)===today);
   const tabsToRender=currentUser.role==='admin'?['today','d1','d2','d3','d4']:[currentUser.tab];
-  if(tabsToRender.includes('today')) renderTab('today',todayData,todayFull,true);
+  if(tabsToRender.includes('today')) renderTab('today',selData,selFull,true);
   ['d1','d2','d3','d4'].forEach(key=>{ if(!tabsToRender.includes(key)) return; renderTab(key,todayData.filter(r=>normDaerah(r.daerah)===DAERAH_MAP[key]),todayFull,false); });
 }
 
@@ -471,7 +521,7 @@ function renderTab(key,data,dateStr,isAll){
   document.getElementById(pre+'tb').textContent=data.length+' anggota';
   if(isAll){ const byD=countBy(data,'daerah'); makeChart(pre+'c1','bar',Object.keys(byD),Object.values(byD),COLORS); }
   else { const byB=countBy(data,'balai'); makeChart(pre+'c1','bar',Object.keys(byB).map(l=>l.replace('BALAI POLIS ','')),Object.values(byB),COLORS); }
-  const byT=countBy(data,'jenis'); makeChart(pre+'c2','doughnut',Object.keys(byT),Object.values(byT),COLORS);
+  renderPenugasanCard(key+'_pngs_card', data, dateStr);
   const tbody=document.getElementById(pre+'table');
   if(!data.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan hari ini</div></div></td></tr>'; return; }
   if(isAll){
@@ -479,9 +529,76 @@ function renderTab(key,data,dateStr,isAll){
   } else {
     tbody.innerHTML=data.map((r,i)=>`<tr><td style="color:var(--muted);font-size:11px;">${i+1}</td><td style="font-size:12px;">${r.pangkat||'—'}</td><td><strong>${r.nama}</strong></td><td style="font-size:12px;">${r.balai.replace('BALAI POLIS ','')}</td><td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ','')}</td><td><span class="badge ${badgeClass(r.jenis)}">${r.jenis||'—'}</span></td><td><strong>${r.jam||'—'}</strong></td><td>${r.masa||'—'}</td><td>${r.jantina||'—'}</td><td>${r.pejawatan||'—'}</td></tr>`).join('');
   }
+  renderSummaryTable(pre+'table', data);
 }
 
 function countBy(data,key){ const m={}; data.forEach(d=>{ const v=d[key]||'Lain'; m[v]=(m[v]||0)+1; }); return m; }
+
+function renderPenugasanCard(cardId, data, dateStr){
+  const card=document.getElementById(cardId); if(!card) return;
+  const JENIS_ORDER=['SJR','MPV','PEJABAT PERTANYAAN','DCC','SENTRI / PROWLER','BIT/RONDAAN','TUGAS PENTADBIRAN','LAIN-LAIN TUGAS'];
+  const counts={};
+  JENIS_ORDER.forEach(j=>{ counts[j]={peg:0,apr:0}; });
+  data.forEach(d=>{ const j=d.jenis||'LAIN-LAIN TUGAS'; if(!counts[j]) counts[j]={peg:0,apr:0}; if(isPeg(d)) counts[j].peg++; else counts[j].apr++; });
+  let totalPeg=0,totalApr=0;
+  JENIS_ORDER.forEach(j=>{ totalPeg+=counts[j].peg; totalApr+=counts[j].apr; });
+  let rows='';
+  JENIS_ORDER.forEach(j=>{ rows+=`<tr><td style="padding:7px 14px;background:#fffde8;font-size:13px;font-weight:600;color:#333;border-bottom:1px solid #e8e8c8;">${j}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].peg}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].apr}</td></tr>`; });
+  if(!dateStr){ const now=new Date(); const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu']; const months=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember']; dateStr=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear(); }
+  card.innerHTML=`
+    <div style="padding:14px 16px 10px;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:0;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;">📋 Penugasan Harian</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">${dateStr}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr>
+      <th style="padding:11px 14px;background:#c8c8c8;text-align:left;font-size:12px;font-weight:700;color:#333;letter-spacing:.05em;text-transform:uppercase;">PENUGASAN</th>
+      <th style="padding:11px 14px;background:#f4a261;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">PEG</th>
+      <th style="padding:11px 14px;background:#4a90d9;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">APR</th>
+    </tr></thead>
+    <tbody>${rows}
+      <tr>
+        <td style="padding:10px 14px;background:#d0d0d0;font-weight:700;font-size:13px;color:#222;">JUMLAH KESELURUHAN</td>
+        <td style="padding:10px 14px;background:#f4a261;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalPeg}</td>
+        <td style="padding:10px 14px;background:#4a90d9;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalApr}</td>
+      </tr>
+    </tbody>
+  </table>`;
+}
+
+function isPeg(d){
+  const p=String(d.pejawatan||'').toUpperCase().trim();
+  const pangkat=String(d.pangkat||'').toUpperCase().trim();
+  if(p.includes('PEG')||p.includes('PEGAWAI')) return true;
+  if(pangkat.includes('INSP')||pangkat.includes('DSP')||pangkat.includes('ASP')||pangkat.includes('SUPT')||pangkat.includes('DCP')||pangkat.includes('CP')||pangkat.includes('KPP')||pangkat.includes('KDSP')||pangkat.includes('ACP')) return true;
+  return false;
+}
+
+function renderSummaryTable(containerId, data){
+  const existing=document.getElementById('summary_'+containerId);
+  if(existing) existing.remove();
+  if(!data.length) return;
+  const JENIS_ORDER=['SJR','MPV','PEJABAT PERTANYAAN','DCC','SENTRI / PROWLER','BIT/RONDAAN','TUGAS PENTADBIRAN','LAIN-LAIN TUGAS'];
+  const map={};
+  data.forEach(d=>{ const balai=d.balai||'—'; const jenis=d.jenis||'LAIN-LAIN TUGAS'; const key=balai+'|||'+jenis; map[key]=(map[key]||0)+1; });
+  const rows=Object.entries(map).map(([k,v])=>{ const [b,j]=k.split('|||'); return {balai:b,jenis:j,count:v}; });
+  rows.sort((a,b)=>a.balai.localeCompare(b.balai)||a.jenis.localeCompare(b.jenis));
+  const byBalai={};
+  rows.forEach(r=>{ if(!byBalai[r.balai]) byBalai[r.balai]=[]; byBalai[r.balai].push(r); });
+  let html=`<div id="summary_${containerId}" class="table-wrap" style="margin-bottom:18px;"><div class="card-header" style="padding:16px 20px 0;"><div class="card-title">&#128202; Ringkasan Penugasan Mengikut Balai &amp; Jenis Tugas</div><div class="card-badge">${data.length} anggota</div></div><div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>BALAI</th><th>TUGAS</th><th style="text-align:center;">BILANGAN ANGGOTA</th></tr></thead><tbody>`;
+  let grand=0;
+  Object.keys(byBalai).sort().forEach(balai=>{
+    const entries=byBalai[balai];
+    entries.sort((a,b)=>{ const ia=JENIS_ORDER.indexOf(a.jenis),ib=JENIS_ORDER.indexOf(b.jenis); return (ia<0?99:ia)-(ib<0?99:ib); });
+    const tot=entries.reduce((s,e)=>s+e.count,0); grand+=tot;
+    entries.forEach((e,idx)=>{ html+=`<tr>${idx===0?`<td rowspan="${entries.length}" style="font-weight:700;color:var(--navy);vertical-align:middle;background:#f8fafc;">${balai.replace('BALAI POLIS ','BP ')}</td>`:''}<td><span class="badge ${badgeClass(e.jenis)}">${e.jenis}</span></td><td style="text-align:center;font-weight:600;">${e.count}</td></tr>`; });
+    html+=`<tr style="background:#f1f5f9;"><td colspan="2" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;">Jumlah — ${balai.replace('BALAI POLIS ','BP ')}</td><td style="text-align:center;color:var(--navy);font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;">${tot}</td></tr>`;
+  });
+  html+=`<tr style="background:var(--navy);"><td colspan="2" style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--gold);">JUMLAH KESELURUHAN</td><td style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);">${grand}</td></tr>`;
+  html+=`</tbody></table></div></div>`;
+  const container=document.getElementById(containerId);
+  if(container) container.insertAdjacentHTML('afterend',html);
+}
 
 function makeChart(id,type,labels,values,colors){
   if(charts[id]) charts[id].destroy();
@@ -489,7 +606,20 @@ function makeChart(id,type,labels,values,colors){
   charts[id]=new Chart(el.getContext('2d'),{type,data:{labels,datasets:[{data:values,backgroundColor:colors.slice(0,values.length),borderColor:colors.slice(0,values.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:type==='doughnut',position:'right',labels:{font:{family:'Inter',size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}},scales:type!=='doughnut'?{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},maxRotation:40}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Inter',size:10}}}}:{}}});
 }
 
-function badgeClass(j){ if(!j)return''; const u=j.toUpperCase(); if(u.includes('LAIN'))return'badge-lain'; if(u.includes('PERTANYAAN')||u.includes('PEJABAT'))return'badge-pejabat'; if(u.includes('RCI'))return'badge-rci'; return'badge-apr'; }
+function normalizeJenis(j){
+  if(!j) return 'LAIN-LAIN TUGAS';
+  const u=j.toUpperCase().trim();
+  if(u.includes('SJR')) return 'SJR';
+  if(u.includes('MPV')) return 'MPV';
+  if(u.includes('PERTANYAAN')||u.includes('PEJABAT PERTANYAAN')) return 'PEJABAT PERTANYAAN';
+  if(u.includes('DCC')) return 'DCC';
+  if(u.includes('SENTRI')||u.includes('PROWLER')) return 'SENTRI / PROWLER';
+  if(u.includes('BIT')||u.includes('RONDAAN')) return 'BIT/RONDAAN';
+  if(u.includes('PENTADBIRAN')||u.includes('ADMIN')) return 'TUGAS PENTADBIRAN';
+  return 'LAIN-LAIN TUGAS';
+}
+
+function badgeClass(j){ if(!j)return''; const u=j.toUpperCase(); if(u.includes('LAIN'))return'badge-lain'; if(u.includes('PERTANYAAN')||u.includes('PEJABAT'))return'badge-pejabat'; if(u.includes('SJR'))return'badge-rci'; if(u.includes('MPV'))return'badge-rci'; if(u.includes('DCC'))return'badge-lain'; if(u.includes('SENTRI')||u.includes('PROWLER'))return'badge-pejabat'; if(u.includes('BIT')||u.includes('RONDAAN'))return'badge-apr'; if(u.includes('PENTADBIRAN'))return'badge-rci'; return'badge-apr'; }
 
 window.addEventListener('DOMContentLoaded',()=>{ const saved=sessionStorage.getItem('dashUser'); if(saved){ currentUser=JSON.parse(saved); showDashboard(); } });
 </script>
