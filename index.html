@@ -159,7 +159,7 @@
   <span class="next-refresh" id="nextRefresh"></span>
 </div>
 <div class="tabs">
-  <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📅 Hari Ini (Semua)</div>
+  <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📅 Semua Daerah</div>
   <div class="tab d1"     id="tab_btn_d1"    onclick="switchTab('d1')">🔴 Melaka Tengah</div>
   <div class="tab d2"     id="tab_btn_d2"    onclick="switchTab('d2')">🟢 Jasin</div>
   <div class="tab d3"     id="tab_btn_d3"    onclick="switchTab('d3')">🟡 Alor Gajah</div>
@@ -521,7 +521,7 @@ function renderTab(key,data,dateStr,isAll){
   document.getElementById(pre+'tb').textContent=data.length+' anggota';
   if(isAll){ const byD=countBy(data,'daerah'); makeChart(pre+'c1','bar',Object.keys(byD),Object.values(byD),COLORS); }
   else { const byB=countBy(data,'balai'); makeChart(pre+'c1','bar',Object.keys(byB).map(l=>l.replace('BALAI POLIS ','')),Object.values(byB),COLORS); }
-  renderPenugasanCard(key+'_pngs_card', data, dateStr);
+  renderPenugasanCard(key+'_pngs_card', data, dateStr, isAll);
   const tbody=document.getElementById(pre+'table');
   if(!data.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan hari ini</div></div></td></tr>'; return; }
   if(isAll){
@@ -534,7 +534,7 @@ function renderTab(key,data,dateStr,isAll){
 
 function countBy(data,key){ const m={}; data.forEach(d=>{ const v=d[key]||'Lain'; m[v]=(m[v]||0)+1; }); return m; }
 
-function renderPenugasanCard(cardId, data, dateStr){
+function renderPenugasanCard(cardId, data, dateStr, isAll){
   const card=document.getElementById(cardId); if(!card) return;
   const JENIS_ORDER=['SJR','MPV','PEJABAT PERTANYAAN','DCC','SENTRI / PROWLER','BIT/RONDAAN','TUGAS PENTADBIRAN','LAIN-LAIN TUGAS'];
   const counts={};
@@ -545,9 +545,13 @@ function renderPenugasanCard(cardId, data, dateStr){
   let rows='';
   JENIS_ORDER.forEach(j=>{ rows+=`<tr><td style="padding:7px 14px;background:#fffde8;font-size:13px;font-weight:600;color:#333;border-bottom:1px solid #e8e8c8;">${j}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].peg}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].apr}</td></tr>`; });
   if(!dateStr){ const now=new Date(); const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu']; const months=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember']; dateStr=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear(); }
+
+  // Use different title depending on whether this is the "Semua Daerah" tab or a specific daerah tab
+  const cardTitle = isAll ? '📋 Jumlah Penugasan Harian Daerah-Daerah melaka' : '📋 Penugasan Harian';
+
   card.innerHTML=`
     <div style="padding:14px 16px 10px;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:0;">
-      <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;">📋 Penugasan Harian</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;">${cardTitle}</div>
       <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">${dateStr}</div>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
