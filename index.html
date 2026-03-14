@@ -586,9 +586,6 @@ function showDashboard(){
 }
   }
 
-  loadData();
-}
-
 function doLogout(){
   if(currentUser && currentUser.loginId) recordLogout(currentUser.loginId);
   sessionStorage.removeItem('dashUser');
