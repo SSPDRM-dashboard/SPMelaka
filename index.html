@@ -165,13 +165,18 @@
   <div class="tab d3"     id="tab_btn_d3"    onclick="switchTab('d3')">🟡 Alor Gajah</div>
   <div class="tab d4"     id="tab_btn_d4"    onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
   <div class="tab hidden" id="tab_btn_log"   onclick="switchTab('log')">📋 Log Masuk</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 16px;">
+    <label style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;">📆 Pilih Tarikh:</label>
+    <input type="date" id="todayDatePicker" style="border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;cursor:pointer;background:white;" onchange="onDatePickerChange()"/>
+    <button onclick="onDatePickerChange()" style="background:var(--navy);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;">Semak</button>
+  </div>
 </div>
 <main>
   <div class="alert alert-error" id="alertError"></div>
   <div class="alert alert-info"  id="alertInfo"></div>
 
   <div class="tab-content active" id="tab-today">
-    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📅</div><div><div class="date-banner-title" id="today_title">—</div><div class="date-banner-sub">Semua daerah · Pilih tarikh untuk semak penugasan</div></div></div><div class="date-banner-count" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;"><div style="display:flex;align-items:center;gap:8px;"><label style="font-size:11px;color:rgba(255,255,255,0.75);white-space:nowrap;">📆 Pilih Tarikh:</label><input type="date" id="todayDatePicker" style="border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;padding:5px 10px;font-size:13px;font-family:'Inter',sans-serif;background:rgba(255,255,255,0.15);color:white;outline:none;cursor:pointer;" onchange="onDatePickerChange()"/></div><div style="text-align:right;"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div></div></div>
+    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📅</div><div><div class="date-banner-title" id="today_title">—</div><div class="date-banner-sub">Semua daerah · Tarikh penugasan dipilih</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div></div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="today_k1">—</div><div class="kpi-sub">Semua daerah</div><div class="kpi-bar navy"></div></div>
       <div class="kpi"><div class="kpi-icon">🏢</div><div class="kpi-label">Daerah Aktif</div><div class="kpi-value" id="today_k2">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar gold"></div></div>
@@ -484,20 +489,15 @@ function onDatePickerChange(){
   if(!allData.length) return;
   const selStr=getSelectedDateStr(), selFull=getSelectedDateFull();
   const selData=allData.filter(r=>normaliseDate(r.tarikh)===selStr);
-  renderTab('today',selData,selFull,true);
+  const tabsToRender=currentUser.role==='admin'?['today','d1','d2','d3','d4']:[currentUser.tab];
+  if(tabsToRender.includes('today')) renderTab('today',selData,selFull,true);
+  ['d1','d2','d3','d4'].forEach(key=>{ if(!tabsToRender.includes(key)) return; renderTab(key,selData.filter(r=>normDaerah(r.daerah)===DAERAH_MAP[key]),selFull,false); });
 }
 
 function renderAll(){
-  const today=getTodayStr(), todayFull=getTodayFull();
-  // Set date picker default to today
   const picker=document.getElementById('todayDatePicker');
   if(picker&&!picker.value){ const n=new Date(); picker.value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
-  const selStr=getSelectedDateStr(), selFull=getSelectedDateFull();
-  const selData=allData.filter(r=>normaliseDate(r.tarikh)===selStr);
-  const todayData=allData.filter(r=>normaliseDate(r.tarikh)===today);
-  const tabsToRender=currentUser.role==='admin'?['today','d1','d2','d3','d4']:[currentUser.tab];
-  if(tabsToRender.includes('today')) renderTab('today',selData,selFull,true);
-  ['d1','d2','d3','d4'].forEach(key=>{ if(!tabsToRender.includes(key)) return; renderTab(key,todayData.filter(r=>normDaerah(r.daerah)===DAERAH_MAP[key]),todayFull,false); });
+  onDatePickerChange();
 }
 
 function renderTab(key,data,dateStr,isAll){
