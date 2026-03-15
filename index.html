@@ -1,242 +1,252 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSPDRM MELAKA - Dashboard Penugasan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --navy: #003087; --navy-dark: #001f5c; --navy-mid: #0a3fa8; --gold: #FFD700;
-            --dark: #0f172a; --muted: #64748b; --bg: #f1f5f9; --border: #e2e8f0;
-            --red: #dc2626; --green: #16a34a; --amber: #d97706; --purple: #7c3aed;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
-
-        /* --- LOGIN PAGE --- */
-        #loginPage {
-            display: flex; align-items: center; justify-content: center; min-height: 100vh;
-            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-mid) 100%);
-            position: fixed; inset: 0; z-index: 999;
-        }
-        .login-box {
-            background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
-        }
-        .login-logo { width: 80px; margin-bottom: 15px; }
-        .login-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 5px; }
-        .login-sub { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 25px; letter-spacing: 1px; }
-        .login-field { text-align: left; margin-bottom: 15px; }
-        .login-field label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 5px; text-transform: uppercase; }
-        .login-field input { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; outline: none; transition: 0.2s; font-size: 14px; }
-        .login-field input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(0,48,135,0.1); }
-        .btn-login { width: 100%; padding: 13px; background: var(--navy); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .btn-login:hover { background: var(--navy-dark); transform: translateY(-1px); }
-        .btn-login:disabled { background: var(--muted); cursor: not-allowed; }
-        .login-error { color: #dc2626; font-size: 13px; margin-top: 15px; display: none; background: #fee2e2; padding: 10px; border-radius: 8px; font-weight: 500; }
-
-        /* --- DASHBOARD LAYOUT --- */
-        #dashboardPage { display: none; }
-        header {
-            background: var(--navy-dark); height: 70px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 100;
-        }
-        .header-title { font-family: 'Rajdhani', sans-serif; font-size: 22px; color: white; font-weight: 700; letter-spacing: 1px; }
-        .header-right { display: flex; align-items: center; gap: 15px; color: white; }
-        .user-pill { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-logout { background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; }
-        .btn-logout:hover { background: #b91c1c; }
-
-        /* --- TABS --- */
-        .tabs { background: white; display: flex; padding: 0 30px; border-bottom: 1px solid var(--border); overflow-x: auto; gap: 5px; }
-        .tab { padding: 18px 20px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: 0.2s; }
-        .tab:hover { background: #f8fafc; color: var(--navy); }
-        .tab.active { color: var(--navy); border-bottom-color: var(--navy); background: #f0f4ff; }
-        .tab.hidden { display: none; }
-
-        /* --- CONTENT --- */
-        main { padding: 25px 30px; max-width: 1400px; margin: 0 auto; }
-        .date-banner { border-radius: 15px; padding: 25px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: white; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .banner-navy { background: linear-gradient(135deg, var(--navy-dark), var(--navy-mid)); }
-        .banner-red { background: linear-gradient(135deg, #991b1b, #dc2626); }
-        .banner-green { background: linear-gradient(135deg, #14532d, #16a34a); }
-        .banner-amber { background: linear-gradient(135deg, #78350f, #d97706); }
-        .banner-purple { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
-        .kpi-title { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; color: var(--gold); }
-        .kpi-value { font-family: 'Rajdhani', sans-serif; font-size: 45px; font-weight: 700; line-height: 1; }
-
-        /* --- TABLE --- */
-        .table-wrap { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; padding: 14px 15px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; border-bottom: 2px solid var(--border); letter-spacing: 0.5px; }
-        td { padding: 14px 15px; border-bottom: 1px solid var(--border); line-height: 1.4; }
-        tr:hover { background-color: #fcfdfe; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
-        .badge-apr { background: #dbeafe; color: #1e40af; }
-        .badge-pejabat { background: #fef9c3; color: #854d0e; }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        footer { text-align: center; padding: 40px 20px; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
-        
-        input[type="date"] { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 13px; color: var(--dark); outline: none; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSPDRM - Dashboard Penugasan</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#003087;--navy-dark:#001f5c;--navy-mid:#0a3fa8;--gold:#FFD700;--gold-dark:#c9a800;--dark:#0f172a;--muted:#64748b;--card:#fff;--bg:#f1f5f9;--border:#e2e8f0;--red:#dc2626;--green:#16a34a;--amber:#d97706;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+  #loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 60%,#1d4ed8 100%);position:fixed;inset:0;z-index:999;}
+  .login-box{background:white;border-radius:20px;padding:40px 44px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.35);text-align:center;}
+  .login-logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px;}
+  .login-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
+  .login-field{margin-bottom:16px;text-align:left;}
+  .login-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+  .login-field input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--dark);transition:border-color .2s;}
+  .login-field input:focus{border-color:var(--navy);}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.04em;transition:opacity .2s;}
+  .btn-login:hover{opacity:.9;}
+  .login-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:14px;display:none;}
+  #dashboardPage{display:none;}
+  header{background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,48,135,0.4);border-bottom:3px solid var(--gold);}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .pdrm-logo{width:48px;height:48px;object-fit:contain;}
+  .header-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:white;}
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;color:white;font-size:12px;}
+  .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;}
+  .tabs{background:white;border-bottom:2px solid var(--border);padding:0 32px;display:flex;overflow-x:auto;}
+  .tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  .tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .tab.hidden{display:none;}
+  main{padding:24px 32px;max-width:1400px;margin:0 auto;}
+  .date-banner{border-radius:14px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:white;}
+  .date-banner.navy{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);}
+  .date-banner.red{background:linear-gradient(135deg,#991b1b 0%,#dc2626 100%);}
+  .date-banner.green{background:linear-gradient(135deg,#14532d 0%,#16a34a 100%);}
+  .date-banner.amber{background:linear-gradient(135deg,#78350f 0%,#d97706 100%);}
+  .date-banner.purple{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);}
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi{background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--border);position:relative;}
+  .kpi-value{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;}
+  .table-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:#f8fafc;padding:12px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:2px solid var(--border);}
+  td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align: middle;}
+  .badge{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+  .badge-pejabat{background:#fef9c3;color:#854d0e;}
+  .badge-apr{background:#dbeafe;color:#1e40af;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+  .loading{text-align:center;padding:32px;color:var(--muted);}
+</style>
 </head>
 <body>
 
 <div id="loginPage">
-    <div class="login-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="login-logo">
-        <div class="login-title">SSPDRM MELAKA</div>
-        <div class="login-sub">Sistem Pengurusan Penugasan</div>
-        <div class="login-field">
-            <label>Nama Pengguna</label>
-            <input type="text" id="loginUser" placeholder="Contoh: admin">
-        </div>
-        <div class="login-field">
-            <label>Kata Laluan</label>
-            <input type="password" id="loginPass" placeholder="••••••••">
-        </div>
-        <button class="btn-login" id="loginBtn" onclick="doLogin()">LOG MASUK</button>
-        <div class="login-error" id="loginError">❌ Nama pengguna atau kata laluan salah.</div>
-    </div>
+  <div class="login-box">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="login-logo">
+    <div class="login-title">SSPDRM MELAKA</div>
+    <div class="login-sub">Sistem Penugasan Anggota</div>
+    <div class="login-field"><label>Nama Pengguna</label><input type="text" id="loginUser" /></div>
+    <div class="login-field"><label>Kata Laluan</label><input type="password" id="loginPass" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn-login" onclick="doLogin()">LOG MASUK</button>
+    <div class="login-error" id="loginError">❌ Nama pengguna atau kata laluan tidak sah.</div>
+  </div>
 </div>
 
 <div id="dashboardPage">
-    <header>
-        <div class="header-title">SSPDRM MELAKA</div>
-        <div class="header-right">
-            <div id="headerDate" style="font-family:'Rajdhani'; font-weight:700; color: var(--gold); font-size: 16px;"></div>
-            <div class="user-pill">👤 <span id="userPillName">—</span></div>
-            <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
-        </div>
-    </header>
+<header>
+  <div class="header-left">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="pdrm-logo">
+    <div class="header-title">SSPDRM MELAKA</div>
+  </div>
+  <div class="header-right">
+    <div id="headerDate" style="color:var(--gold); font-weight:700; font-family:'Rajdhani';"></div>
+    <div class="user-pill">👤 <span id="userPillName"></span></div>
+    <button class="btn-logout" onclick="doLogout()">Keluar</button>
+  </div>
+</header>
 
-    <div class="tabs">
-        <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📊 Keseluruhan</div>
-        <div class="tab" id="tab_btn_d1" onclick="switchTab('d1')">Melaka Tengah</div>
-        <div class="tab" id="tab_btn_d2" onclick="switchTab('d2')">Jasin</div>
-        <div class="tab" id="tab_btn_d3" onclick="switchTab('d3')">Alor Gajah</div>
-        <div class="tab" id="tab_btn_d4" onclick="switchTab('d4')">IPK SSPDRM</div>
-        <div style="margin-left:auto; display:flex; align-items:center; padding-right:10px;">
-            <span style="font-size: 11px; font-weight: 700; color: var(--muted); margin-right: 10px; text-transform: uppercase;">Tarikh:</span>
-            <input type="date" id="todayDatePicker" onchange="onDatePickerChange()">
-        </div>
+<div class="tabs">
+  <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📅 Semua Daerah</div>
+  <div class="tab d1" id="tab_btn_d1" onclick="switchTab('d1')">🔴 Melaka Tengah</div>
+  <div class="tab d2" id="tab_btn_d2" onclick="switchTab('d2')">🟢 Jasin</div>
+  <div class="tab d3" id="tab_btn_d3" onclick="switchTab('d3')">🟡 Alor Gajah</div>
+  <div class="tab d4" id="tab_btn_d4" onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
+  <div style="margin-left:auto; display:flex; align-items:center; padding-right:20px;">
+      <input type="date" id="todayDatePicker" onchange="onDatePickerChange()" style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+  </div>
+</div>
+
+<main>
+  <div class="tab-content active" id="tab-today">
+    <div class="date-banner navy">
+        <div><h2 id="today_title">Dashboard Utama</h2></div>
+        <div style="text-align:right"><div class="kpi-value" id="today_count">0</div><div>Jumlah Anggota</div></div>
     </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Daerah</th>
+            <th>Nama & No. Badan</th>
+            <th>Balai Pendaftaran</th>
+            <th>Balai Bertugas</th>
+            <th>Jenis Tugasan</th>
+            <th>Jam</th>
+            <th>Masa Mula</th>
+          </tr>
+        </thead>
+        <tbody id="today_table"><tr><td colspan="9" class="loading">Sila muat data...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 
-    <main>
-        <div class="tab-content active" id="tab-today">
-            <div class="date-banner banner-navy">
-                <div><div class="kpi-title" id="today_title">Dashboard Utama</div><div style="font-size: 13px; opacity: 0.9;">Statistik penugasan seluruh kontinjen Melaka</div></div>
-                <div style="text-align:right;"><div class="kpi-value" id="today_count">0</div><div style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Jumlah Petugas</div></div>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Timestamp</th>
-                            <th>Daerah</th>
-                            <th>Nama & No. Badan</th>
-                            <th>Balai Pendaftaran</th>
-                            <th>Balai Bertugas</th>
-                            <th>Jenis Tugasan</th>
-                            <th>Jam</th>
-                            <th>Masa Mula</th>
-                        </tr>
-                    </thead>
-                    <tbody id="today_table"></tbody>
-                </table>
-            </div>
-        </div>
+  <div class="tab-content" id="tab-d1">
+    <div class="date-banner red"><h2>Melaka Tengah</h2><div class="kpi-value" id="d1_count">0</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pangkat</th>
+            <th>Nama & No. Badan</th>
+            <th>Balai Bertugas</th>
+            <th>Jenis Tugasan</th>
+            <th>Jam</th>
+            <th>Masa Mula</th>
+            <th>Jantina</th>
+            <th>Pejawatan</th>
+          </tr>
+        </thead>
+        <tbody id="d1_table"></tbody>
+      </table>
+    </div>
+  </div>
 
-        <div class="tab-content" id="tab-d1">
-            <div class="date-banner banner-red"><div class="kpi-title">Daerah Melaka Tengah</div><div class="kpi-value" id="d1_count">0</div></div>
-            <div class="table-wrap"><table><tbody id="d1_table"></tbody></table></div>
-        </div>
-        <div class="tab-content" id="tab-d2">
-            <div class="date-banner banner-green"><div class="kpi-title">Daerah Jasin</div><div class="kpi-value" id="d2_count">0</div></div>
-            <div class="table-wrap"><table><tbody id="d2_table"></tbody></table></div>
-        </div>
-        <div class="tab-content" id="tab-d3">
-            <div class="date-banner banner-amber"><div class="kpi-title">Daerah Alor Gajah</div><div class="kpi-value" id="d3_count">0</div></div>
-            <div class="table-wrap"><table><tbody id="d3_table"></tbody></table></div>
-        </div>
-        <div class="tab-content" id="tab-d4">
-            <div class="date-banner banner-purple"><div class="kpi-title">Cawangan IPK SSPDRM</div><div class="kpi-value" id="d4_count">0</div></div>
-            <div class="table-wrap"><table><tbody id="d4_table"></tbody></table></div>
-        </div>
-    </main>
+  <div class="tab-content" id="tab-d2">
+    <div class="date-banner green"><h2>Jasin</h2><div class="kpi-value" id="d2_count">0</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pangkat</th>
+            <th>Nama & No. Badan</th>
+            <th>Balai Bertugas</th>
+            <th>Jenis Tugasan</th>
+            <th>Jam</th>
+            <th>Masa Mula</th>
+            <th>Jantina</th>
+            <th>Pejawatan</th>
+          </tr>
+        </thead>
+        <tbody id="d2_table"></tbody>
+      </table>
+    </div>
+  </div>
 
-    <footer>SSPDRM MELAKA · <span id="footerRefresh">Kemaskini: Memuatkan...</span></footer>
+  <div class="tab-content" id="tab-d3">
+    <div class="date-banner amber"><h2>Alor Gajah</h2><div class="kpi-value" id="d3_count">0</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pangkat</th>
+            <th>Nama & No. Badan</th>
+            <th>Balai Bertugas</th>
+            <th>Jenis Tugasan</th>
+            <th>Jam</th>
+            <th>Masa Mula</th>
+            <th>Jantina</th>
+            <th>Pejawatan</th>
+          </tr>
+        </thead>
+        <tbody id="d3_table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-d4">
+    <div class="date-banner purple"><h2>IPK SSPDRM</h2><div class="kpi-value" id="d4_count">0</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pangkat</th>
+            <th>Nama & No. Badan</th>
+            <th>Balai Bertugas</th>
+            <th>Jenis Tugasan</th>
+            <th>Jam</th>
+            <th>Masa Mula</th>
+            <th>Jantina</th>
+            <th>Pejawatan</th>
+          </tr>
+        </thead>
+        <tbody id="d4_table"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
 </div>
 
 <script>
-// ==========================================
-// KONFIGURASI (KEMASKINI URL DI SINI)
-// ==========================================
-const FIXED_URL = 'https://script.google.com/macros/s/AKfycbzwWTgYO92mc4v9r-_dXWhyYp1qsMjscRKlO8VkXmzBLXp651mR_EquIfcKKsTiqqKj/exec'; 
-const PROXY_API = 'https://api.allorigins.win/get?url=';
+const USERS = {
+  'admin': { password: 'admin123', role: 'admin' },
+  'melakatengah': { password: 'mt123', role: 'daerah', tab: 'd1' },
+  'jasin': { password: 'js123', role: 'daerah', tab: 'd2' },
+  'alorgajah': { password: 'ag123', role: 'daerah', tab: 'd3' },
+  'ipksspdrm': { password: 'ipk123', role: 'daerah', tab: 'd4' }
+};
 
+const FIXED_URL = 'https://script.google.com/macros/s/AKfycbzwWTgYO92mc4v9r-_dXWhyYp1qsMjscRKlO8VkXmzBLXp651mR_EquIfcKKsTiqqKj/exec';
+const PROXY = 'https://corsproxy.io/?';
 let allData = [];
 let currentUser = null;
 
-// --- 1. LOGIN ---
-async function doLogin() {
-    const u = document.getElementById('loginUser').value.toLowerCase().trim();
-    const p = document.getElementById('loginPass').value.trim();
-    const btn = document.getElementById('loginBtn');
-    const err = document.getElementById('loginError');
-
-    if(!u || !p) return;
-    btn.textContent = "MENGESAHKAN...";
-    btn.disabled = true;
-    err.style.display = 'none';
-
-    const authUrl = `${FIXED_URL}?action=login&u=${encodeURIComponent(u)}&p=${encodeURIComponent(p)}`;
-
-    try {
-        const response = await fetch(`${PROXY_API}${encodeURIComponent(authUrl)}`);
-        const data = await response.json();
-        const result = JSON.parse(data.contents); // Tukar teks biasa ke JSON
-
-        if (result.success) {
-            currentUser = { username: u, role: result.role, tab: result.tab || 'today' };
-            saveLog('login');
-
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboardPage').style.display = 'block';
-            document.getElementById('userPillName').textContent = u.toUpperCase();
-            document.getElementById('todayDatePicker').value = new Date().toISOString().split('T')[0];
-            
-            setupPermissions();
-            loadData();
-            startClock();
-        } else {
-            err.style.display = 'block';
-            btn.textContent = "LOG MASUK";
-            btn.disabled = false;
-        }
-    } catch (e) {
-        console.error("Auth Error:", e);
-        err.textContent = "❌ Ralat sambungan. Pastikan URL Web App betul.";
-        err.style.display = 'block';
-        btn.textContent = "LOG MASUK";
-        btn.disabled = false;
+function doLogin() {
+    const u = document.getElementById('loginUser').value.toLowerCase();
+    const p = document.getElementById('loginPass').value;
+    if (USERS[u] && USERS[u].password === p) {
+        currentUser = USERS[u];
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardPage').style.display = 'block';
+        document.getElementById('userPillName').textContent = u.toUpperCase();
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('todayDatePicker').value = today;
+        
+        setupPermissions();
+        loadData();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
     }
 }
 
-// --- 2. AKSES TAB ---
 function setupPermissions() {
     if (currentUser.role !== 'admin') {
-        const ids = ['tab_btn_today', 'tab_btn_d1', 'tab_btn_d2', 'tab_btn_d3', 'tab_btn_d4'];
-        ids.forEach(id => {
-            if (id !== `tab_btn_${currentUser.tab}`) {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-            }
+        const tabs = ['tab_btn_today', 'tab_btn_d1', 'tab_btn_d2', 'tab_btn_d3', 'tab_btn_d4'];
+        tabs.forEach(id => {
+            if (id !== `tab_btn_${currentUser.tab}`) document.getElementById(id).classList.add('hidden');
         });
         switchTab(currentUser.tab);
     }
@@ -245,105 +255,67 @@ function setupPermissions() {
 function switchTab(id) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    const targetTab = document.getElementById(`tab_btn_${id}`);
-    const targetContent = document.getElementById(`tab-${id}`);
-    if(targetTab) targetTab.classList.add('active');
-    if(targetContent) targetContent.classList.add('active');
+    document.getElementById(`tab_btn_${id}`).classList.add('active');
+    document.getElementById(`tab-${id}`).classList.add('active');
 }
 
-// --- 3. PENGURUSAN DATA ---
 async function loadData() {
     try {
-        const response = await fetch(`${PROXY_API}${encodeURIComponent(FIXED_URL)}`);
-        const data = await response.json();
-        const result = JSON.parse(data.contents);
-        
-        allData = result.data || [];
+        const res = await fetch(PROXY + encodeURIComponent(FIXED_URL));
+        const json = await res.json();
+        allData = json.data;
         processAndRender();
-    } catch (e) { console.error("Data Error:", e); }
+    } catch (e) { console.error("Load Error", e); }
 }
 
 function onDatePickerChange() { processAndRender(); }
 
 function processAndRender() {
     const targetDate = document.getElementById('todayDatePicker').value;
-    const filtered = allData.filter(row => {
-        if (!row.Tarikh) return false;
-        // Penyelarasan format tarikh Google vs HTML DatePicker
-        const rowDate = new Date(row.Tarikh).toISOString().split('T')[0];
-        return rowDate === targetDate;
-    });
+    const filtered = allData.filter(row => row.Tarikh === targetDate);
     
-    // TAB SEMUA DAERAH
+    // Render Semua Daerah
     document.getElementById('today_count').textContent = filtered.length;
-    document.getElementById('today_title').textContent = "Dashboard Utama: " + targetDate;
-    document.getElementById('today_table').innerHTML = filtered.map((row, i) => `
+    const todayTbody = document.getElementById('today_table');
+    todayTbody.innerHTML = filtered.map((row, i) => `
         <tr>
             <td>${i+1}</td>
-            <td style="color:var(--muted); font-size:11px;">${row.Timestamp || '-'}</td>
-            <td><span class="badge badge-apr">${row.Daerah || '-'}</span></td>
-            <td><strong>${row.Nama || '-'}</strong><br><small>${row.NoBadan || '-'}</small></td>
+            <td style="font-size:11px; color:var(--muted);">${row.Timestamp || '-'}</td>
+            <td><span class="badge badge-apr">${row.Daerah}</span></td>
+            <td><strong>${row.Nama}</strong><br><small>${row.NoBadan}</small></td>
             <td>${row.BalaiPendaftaran || row.BalaiAsal || '-'}</td>
-            <td>${row.BalaiBertugas || '-'}</td>
-            <td>${row.JenisTugasan || '-'}</td>
-            <td>${row.Jam || '-'}</td>
-            <td>${row.MasaMula || '-'}</td>
+            <td>${row.BalaiBertugas}</td>
+            <td>${row.JenisTugasan}</td>
+            <td>${row.Jam}</td>
+            <td>${row.MasaMula}</td>
         </tr>
-    `).join('') || '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--muted);">Tiada rekod penugasan pada tarikh ini.</td></tr>';
+    `).join('') || '<tr><td colspan="9" style="text-align:center;">Tiada data</td></tr>';
 
-    // TAB DAERAH
+    // Render Daerah Tabs
     const dMap = { d1: 'MELAKA TENGAH', d2: 'JASIN', d3: 'ALOR GAJAH', d4: 'IPK SSPDRM' };
     Object.keys(dMap).forEach(id => {
         const dData = filtered.filter(r => r.Daerah?.toUpperCase() === dMap[id]);
-        const countEl = document.getElementById(`${id}_count`);
-        if(countEl) countEl.textContent = dData.length;
-        
+        document.getElementById(`${id}_count`).textContent = dData.length;
         const tbody = document.getElementById(`${id}_table`);
         if(tbody) {
             tbody.innerHTML = dData.map((row, i) => `
                 <tr>
-                    <td width="40">${i+1}</td>
-                    <td width="100">${row.Pangkat || '-'}</td>
+                    <td>${i+1}</td>
+                    <td>${row.Pangkat || '-'}</td>
                     <td><strong>${row.Nama}</strong><br><small>${row.NoBadan}</small></td>
                     <td>${row.BalaiBertugas}</td>
                     <td>${row.JenisTugasan}</td>
                     <td>${row.Jam}</td>
                     <td>${row.MasaMula}</td>
+                    <td>${row.Jantina || '-'}</td>
                     <td><span class="badge badge-pejabat">${row.Pejawatan || 'ANGGOTA'}</span></td>
                 </tr>
-            `).join('') || '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--muted);">Tiada data.</td></tr>';
+            `).join('') || '<tr><td colspan="9" style="text-align:center;">Tiada data</td></tr>';
         }
     });
-    document.getElementById('footerRefresh').textContent = "Kemaskini: " + new Date().toLocaleTimeString('ms-MY');
 }
 
-// --- 4. LOGS & SISTEM ---
-async function saveLog(type) {
-    if(!currentUser) return;
-    const now = new Date();
-    const logData = {
-        action: type, username: currentUser.username, role: currentUser.role, tab: currentUser.tab,
-        loginDate: now.toLocaleDateString('ms-MY'),
-        loginTime: type === 'login' ? now.toLocaleTimeString('ms-MY') : '',
-        logoutTime: type === 'logout' ? now.toLocaleTimeString('ms-MY') : '',
-        deviceInfo: navigator.userAgent.includes("Mobi") ? "Mobile" : "Desktop"
-    };
-    const logUrl = `${FIXED_URL}?action=saveLog&data=${encodeURIComponent(JSON.stringify(logData))}`;
-    fetch(`${PROXY_API}${encodeURIComponent(logUrl)}`);
-}
-
-function startClock() {
-    setInterval(() => {
-        const el = document.getElementById('headerDate');
-        if(el) el.textContent = new Date().toLocaleDateString('ms-MY', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-    }, 1000);
-}
-
-function doLogout() {
-    saveLog('logout');
-    location.reload();
-}
+function doLogout() { location.reload(); }
 </script>
 </body>
 </html>
