@@ -1,68 +1,302 @@
-function doGet(e) {
-  var action = e.parameter.action;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSPDRM - Dashboard Penugasan</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#003087;--navy-dark:#001f5c;--navy-mid:#0a3fa8;--gold:#FFD700;--gold-dark:#c9a800;--dark:#0f172a;--muted:#64748b;--card:#fff;--bg:#f1f5f9;--border:#e2e8f0;--red:#dc2626;--green:#16a34a;--amber:#d97706;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+  #loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 60%,#1d4ed8 100%);position:fixed;inset:0;z-index:999;}
+  .login-box{background:white;border-radius:20px;padding:40px 44px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.35);text-align:center;}
+  .login-logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px;}
+  .login-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
+  .login-field{margin-bottom:16px;text-align:left;}
+  .login-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+  .login-field input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--dark);transition:border-color .2s;}
+  .login-field input:focus{border-color:var(--navy);}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.04em;transition:opacity .2s;}
+  .btn-login:hover{opacity:.9;}
+  .login-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:14px;display:none;}
+  .login-footer{font-size:11px;color:var(--muted);margin-top:20px;}
+  #dashboardPage{display:none;}
+  header{background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,48,135,0.4);border-bottom:3px solid var(--gold);}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .pdrm-logo{width:48px;height:48px;object-fit:contain;}
+  .header-titles{display:flex;flex-direction:column;}
+  .header-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:white;letter-spacing:.05em;line-height:1.1;}
+  .header-sub{font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:.08em;text-transform:uppercase;}
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .live-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:5px 12px;}
+  .live-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+  .live-text{font-size:12px;color:white;font-weight:500;}
+  .user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;}
+  .user-pill span{font-size:12px;color:white;font-weight:600;}
+  .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
+  .url-bar{background:white;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:10px;}
+  .url-bar input{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;}
+  .tabs{background:white;border-bottom:2px solid var(--border);padding:0 32px;display:flex;overflow-x:auto;}
+  .tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  .tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .tab.hidden{display:none;}
+  main{padding:24px 32px;max-width:1400px;margin:0 auto;}
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi{background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--border);position:relative;overflow:hidden;}
+  .kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;}
+  .kpi-value{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;color:var(--dark);}
+  .card{background:var(--card);border-radius:12px;padding:20px 22px;border:1px solid var(--border);margin-bottom:18px;}
+  .grid-wide{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{padding:10px 14px;text-align:left;background:#f8fafc;font-size:11px;color:var(--muted);text-transform:uppercase;}
+  td{padding:10px 14px;border-bottom:1px solid var(--border);}
+  .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-rci{background:#fce7f3;color:#9d174d;}
+  .badge-apr{background:#dbeafe;color:#1e40af;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+  footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div id="loginPage">
+  <div class="login-box">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="login-logo" alt="PDRM">
+    <div class="login-title">SSPDRM MELAKA</div>
+    <div class="login-sub">Sistem Penugasan Anggota</div>
+    <div class="login-field"><label>Nama Pengguna</label><input type="text" id="loginUser" placeholder="Username"></div>
+    <div class="login-field"><label>Kata Laluan</label><input type="password" id="loginPass" placeholder="Password"></div>
+    <button class="btn-login" onclick="doLogin()">LOG MASUK</button>
+    <div class="login-error" id="loginError">❌ Nama pengguna atau kata laluan tidak sah.</div>
+  </div>
+</div>
+
+<div id="dashboardPage">
+<header>
+  <div class="header-left">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="pdrm-logo">
+    <div class="header-titles"><div class="header-title">SSPDRM MELAKA</div><div class="header-sub">Dashboard Penugasan</div></div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div><div class="live-text" id="liveText">Live</div></div>
+    <div class="user-pill"><span>👤</span><span id="userPillName">—</span></div>
+    <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
+  </div>
+</header>
+
+<div class="url-bar" id="urlBar">
+  <label>📋 Apps Script URL:</label>
+  <input type="text" id="sheetUrl" value=""/>
+  <button onclick="loadData()" style="padding:6px 12px; cursor:pointer;">Muat Data</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📅 Semua Daerah</div>
+  <div class="tab" id="tab_btn_d1" onclick="switchTab('d1')">🔴 Melaka Tengah</div>
+  <div class="tab" id="tab_btn_d2" onclick="switchTab('d2')">🟢 Jasin</div>
+  <div class="tab" id="tab_btn_d3" onclick="switchTab('d3')">🟡 Alor Gajah</div>
+  <div class="tab" id="tab_btn_d4" onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
+  <div class="tab" id="tab_btn_log" onclick="switchTab('log')">📋 Log Masuk</div>
+</div>
+
+<main>
+  <!-- Today Tab -->
+  <div class="tab-content active" id="tab-today">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="today_k1">—</div></div>
+      <div class="kpi"><div class="kpi-label">Jam Penugasan</div><div class="kpi-value" id="today_k3">—</div></div>
+    </div>
+    <div class="grid-wide">
+      <div class="card"><canvas id="today_c1"></canvas></div>
+      <div id="today_pngs_card" class="card"></div>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>#</th><th>Daerah</th><th>Nama</th><th>Tugasan</th><th>Jam</th></tr></thead><tbody id="today_table"></tbody></table>
+    </div>
+  </div>
+
+  <!-- District Tabs (Dynamically filled) -->
+  <div class="tab-content" id="tab-d1"></div>
+  <div class="tab-content" id="tab-d2"></div>
+  <div class="tab-content" id="tab-d3"></div>
+  <div class="tab-content" id="tab-d4"></div>
+
+  <!-- Log Tab -->
+  <div class="tab-content" id="tab-log">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <h3>Rekod Log Masuk Pengguna</h3>
+        <button onclick="renderLogTab()" style="padding:5px 10px; cursor:pointer;">🔄 Refresh Log</button>
+      </div>
+      <table>
+        <thead><tr><th>User</th><th>Role</th><th>Tab</th><th>Tarikh</th><th>Masa Masuk</th><th>Masa Keluar</th><th>Peranti</th></tr></thead>
+        <tbody id="log_table"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>Polis Diraja Malaysia · SSPDRM Melaka</footer>
+</div>
+
+<script>
+const FIXED_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // REPLACE THIS
+const USERS = {
+  'admin': { password: 'admin123', role: 'admin', tab: null },
+  'jasin': { password: 'jasin123', role: 'daerah', tab: 'd2' }
+};
+
+let currentUser = null;
+let allData = [];
+
+// ================= LOGGING LOGIC =================
+
+async function sendLogToServer(logData) {
+  try {
+    // We use a GET request with action=saveLog for maximum compatibility
+    const params = new URLSearchParams({
+      action: 'saveLog',
+      data: JSON.stringify(logData)
+    });
+    // mode: no-cors is used because we don't need to read the response from a 302 redirect
+    await fetch(`${FIXED_URL}?${params.toString()}`, { mode: 'no-cors' });
+    console.log("Log signal sent.");
+  } catch (e) {
+    console.error("Log error:", e);
+  }
+}
+
+async function fetchLogsFromServer() {
+  // Use AllOrigins proxy to read JSON from Google Apps Script reliably
+  const url = `${FIXED_URL}?action=getLogs`;
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&ts=${Date.now()}`;
   
-  // 1. ACTION: Get Logs for the Dashboard
-  if (action === 'getLogs') {
-    var sheet = ss.getSheetByName('LOGS');
-    if (!sheet) return createJson({logs: []});
-    
-    var data = sheet.getDataRange().getValues();
-    var logs = [];
-    for (var i = 1; i < data.length; i++) {
-      logs.push({
-        username: data[i][0],
-        role: data[i][1],
-        tab: data[i][2],
-        loginDate: data[i][3],
-        loginTime: data[i][4],
-        logoutTime: data[i][5],
-        deviceInfo: data[i][6]
-      });
-    }
-    return createJson({logs: logs.reverse()}); // Latest first
+  try {
+    const res = await fetch(proxy);
+    const result = await res.json();
+    const data = JSON.parse(result.contents);
+    return data.logs || [];
+  } catch (e) {
+    console.error("Error fetching logs:", e);
+    return [];
   }
-
-  // 2. ACTION: Save Log (Login or Logout)
-  if (action === 'saveLog') {
-    var logData = JSON.parse(e.parameter.data);
-    var sheet = ss.getSheetByName('LOGS');
-    if (!sheet) {
-      sheet = ss.insertSheet('LOGS');
-      sheet.appendRow(['User', 'Role', 'Tab', 'Date', 'Login Time', 'Logout Time', 'Device']);
-    }
-
-    if (logData.action === 'logout') {
-      // Find the last login row for this user and add logout time
-      var data = sheet.getDataRange().getValues();
-      for (var i = data.length - 1; i >= 0; i--) {
-        if (data[i][0] === logData.username && data[i][5] === '') {
-          sheet.getRange(i + 1, 6).setValue(logData.logoutTime);
-          break;
-        }
-      }
-    } else {
-      // It's a login
-      sheet.appendRow([
-        logData.username, 
-        logData.role, 
-        logData.tab, 
-        logData.loginDate, 
-        logData.loginTime, 
-        '', 
-        logData.deviceInfo
-      ]);
-    }
-    return ContentService.createTextOutput("Success");
-  }
-
-  // 3. DEFAULT: Get Member Assignment Data
-  var dataSheet = ss.getSheetByName('DATA'); // Make sure your data sheet is named DATA
-  var rows = dataSheet.getDataRange().getValues();
-  return createJson({rows: rows});
 }
 
-function createJson(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-         .setMimeType(ContentService.MimeType.JSON);
+async function recordLogin(user) {
+  const now = new Date();
+  const logEntry = {
+    username: user.username,
+    role: user.role,
+    tab: user.tab || 'Admin (All)',
+    loginDate: now.toLocaleDateString('en-GB'),
+    loginTime: now.toLocaleTimeString('ms-MY'),
+    deviceInfo: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
+  };
+  await sendLogToServer(logEntry);
+  return logEntry;
 }
+
+async function renderLogTab() {
+  const tbody = document.getElementById('log_table');
+  tbody.innerHTML = '<tr><td colspan="7">Memuatkan log...</td></tr>';
+  
+  const logs = await fetchLogsFromServer();
+  if (logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7">Tiada rekod log ditemui.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = logs.map(l => `
+    <tr>
+      <td><strong>${l.username.toUpperCase()}</strong></td>
+      <td>${l.role}</td>
+      <td>${l.tab}</td>
+      <td>${l.loginDate}</td>
+      <td>${l.loginTime}</td>
+      <td>${l.logoutTime || '-'}</td>
+      <td style="font-size:10px; color:gray;">${l.deviceInfo}</td>
+    </tr>
+  `).join('');
+}
+
+// ================= DASHBOARD LOGIC =================
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  
+  if (USERS[u] && USERS[u].password === p) {
+    currentUser = { username: u, ...USERS[u] };
+    sessionStorage.setItem('dashUser', JSON.stringify(currentUser));
+    recordLogin(currentUser);
+    showDashboard();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function showDashboard() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('dashboardPage').style.display = 'block';
+  document.getElementById('userPillName').textContent = currentUser.username.toUpperCase();
+  document.getElementById('sheetUrl').value = FIXED_URL;
+  
+  if (currentUser.role !== 'admin') {
+    document.getElementById('urlBar').style.display = 'none';
+    document.getElementById('tab_btn_log').style.display = 'none';
+    switchTab(currentUser.tab);
+  }
+  loadData();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(FIXED_URL)}`);
+    const json = await res.json();
+    const data = JSON.parse(json.contents);
+    allData = data.rows || [];
+    renderToday();
+  } catch (e) {
+    console.error("Data load failed", e);
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'log') renderLogTab();
+}
+
+function renderToday() {
+  const tbody = document.getElementById('today_table');
+  tbody.innerHTML = allData.slice(1, 20).map((r, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${r[1]}</td>
+      <td>${r[3] || r[2]}</td>
+      <td><span class="badge badge-apr">${r[16]}</span></td>
+      <td>${r[18]}</td>
+    </tr>
+  `).join('');
+  document.getElementById('today_k1').textContent = allData.length - 1;
+}
+
+function doLogout() {
+  const now = new Date();
+  sendLogToServer({ action: 'logout', username: currentUser.username, logoutTime: now.toLocaleTimeString('ms-MY') });
+  sessionStorage.clear();
+  location.reload();
+}
+
+window.onload = () => {
+  const saved = sessionStorage.getItem('dashUser');
+  if (saved) { currentUser = JSON.parse(saved); showDashboard(); }
+}
+</script>
+</body>
+</html>
