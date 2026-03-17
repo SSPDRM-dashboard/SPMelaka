@@ -42,13 +42,8 @@
   .user-pill span{font-size:12px;color:white;font-weight:600;}
   .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
   .btn-logout:hover{background:rgba(255,255,255,0.25);}
-  .url-bar{background:white;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
-  .url-bar label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
-  .url-bar input{flex:1;min-width:260px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;font-family:'Inter',sans-serif;outline:none;color:var(--dark);}
-  .url-bar input:focus{border-color:var(--navy);}
-  .btn-load{background:var(--navy);color:white;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
-  .btn-load:hover{background:var(--navy-dark);}
-  .next-refresh{font-size:11px;color:var(--muted);margin-left:auto;}
+  /* URL Bar is hidden */
+  .url-bar{display:none !important;}
   .tabs{background:white;border-bottom:2px solid var(--border);padding:0 32px;display:flex;gap:0;overflow-x:auto;}
   .tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
   .tab:hover{color:var(--navy);}
@@ -90,46 +85,120 @@
   .card-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--dark);}
   .card-badge{font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--muted);font-weight:600;}
   .card canvas{max-height:220px;}
-  .table-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead tr{background:#f8fafc;border-bottom:2px solid var(--border);}
-  th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
-  td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--dark);}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:#f8fafc;}
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-  .badge-lain{background:#dcfce7;color:#15803d;} .badge-pejabat{background:#fef9c3;color:#854d0e;} .badge-rci{background:#fce7f3;color:#9d174d;} .badge-apr{background:#dbeafe;color:#1e40af;}
-  .tab-content{display:none;} .tab-content.active{display:block;}
-  .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
-  .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
-  .empty-icon{font-size:40px;margin-bottom:12px;} .empty-text{font-size:14px;font-weight:500;}
-  footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
-  @media(max-width:768px){main{padding:16px;}.grid-wide{grid-template-columns:1fr;}header,.url-bar,.tabs{padding-left:16px;padding-right:16px;}.login-box{margin:16px;padding:28px 24px;}}
-  .pngs-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px;display:inline-block;min-width:380px;}
-  .pngs-table{border-collapse:collapse;font-size:13px;width:100%;}
-  .pngs-table th{padding:10px 18px;font-size:11px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:.06em;text-align:center;}
-  .pngs-table th.th-peg{background:#f4a261;min-width:70px;}
-  .pngs-table th.th-apr{background:#4a90d9;min-width:70px;}
-  .pngs-table th.th-title{background:#c8c8c8;text-align:left;color:#333;padding-left:16px;}
-  .pngs-table td{padding:9px 18px;border-bottom:1px solid #e8e8c8;background:#fffde8;}
-  .pngs-table td.td-label{font-weight:600;color:#333;background:#fffde8;}
-  .pngs-table td.td-num{text-align:center;font-weight:600;color:var(--dark);background:#fffde8;}
-  .pngs-table tr.pngs-total td{background:#d0d0d0;font-weight:700;color:#222;padding:10px 18px;border-top:2px solid #aaa;}
-  .pngs-table tr.pngs-total td.td-num-total{text-align:center;}
-  .pngs-table tr.pngs-jumlah-header td{background:#c8c8c8;font-weight:700;color:#222;padding:8px 18px;}
-  .pngs-table tr.pngs-jumlah-header td.td-num-h{text-align:center;background:#f4a261;color:white;}
-  .pngs-table tr.pngs-jumlah-header td.td-num-h2{text-align:center;background:#4a90d9;color:white;}
-  .pngs-table tr:last-child td{border-bottom:none;}
-  .pngs-table tr.pngs-grand td{background:#d0d0d0;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#222;padding:10px 18px;}
-  .pngs-table tr.pngs-grand td.td-num-g{text-align:center;font-family:'Rajdhani',sans-serif;font-size:17px;}
-
-  .district-header {
-    background-color: var(--navy-mid);
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    border-bottom: 2px solid var(--gold);
+  .table-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow-x:auto;margin-bottom:18px;max-width:100%;}
+  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;}
+  th{padding:10px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+  td{padding:10px 8px;border-bottom:1px solid var(--border);color:var(--dark);word-break:break-word;}
+  
+  /* Smaller # column width - fits 3 digits */
+  th:first-child, td:first-child {
+    width: 35px;
+    min-width: 35px;
+    max-width: 35px;
+    text-align: center !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
   }
+
+  /* Timestamp column - smaller */
+  th:nth-child(2), td:nth-child(2) {
+    min-width: 70px;
+    max-width: 90px;
+    font-size: 10px !important;
+  }
+
+  /* Daerah column */
+  th:nth-child(3), td:nth-child(3) {
+    min-width: 90px;
+  }
+
+  /* Nama column - give more space */
+  th:nth-child(4), td:nth-child(4) {
+    min-width: 150px;
+  }
+
+  /* Balai Pendaftaran column */
+  th:nth-child(5), td:nth-child(5) {
+    min-width: 100px;
+  }
+
+  /* Balai Bertugas column */
+  th:nth-child(6), td:nth-child(6) {
+    min-width: 100px;
+  }
+
+  /* Jenis Tugasan column */
+  th:nth-child(7), td:nth-child(7) {
+    min-width: 100px;
+  }
+
+  /* Lain-lain Tugas column */
+  th:nth-child(8), td:nth-child(8) {
+    min-width: 120px;
+    max-width: 200px;
+  }
+
+  /* Jam column - smaller */
+  th:nth-child(9), td:nth-child(9) {
+    min-width: 40px;
+    text-align: center;
+  }
+
+  /* Masa column - smaller */
+  th:nth-child(10), td:nth-child(10) {
+    min-width: 60px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* For district tabs with 10 columns (different structure) */
+  #tab-d1 table th:nth-child(5), #tab-d1 table td:nth-child(5), /* Jenis Tugasan */
+  #tab-d2 table th:nth-child(5), #tab-d2 table td:nth-child(5),
+  #tab-d3 table th:nth-child(5), #tab-d3 table td:nth-child(5),
+  #tab-d4 table th:nth-child(5), #tab-d4 table td:nth-child(5) {
+    min-width: 100px;
+  }
+
+  #tab-d1 table th:nth-child(6), #tab-d1 table td:nth-child(6), /* Lain-lain Tugas */
+  #tab-d2 table th:nth-child(6), #tab-d2 table td:nth-child(6),
+  #tab-d3 table th:nth-child(6), #tab-d3 table td:nth-child(6),
+  #tab-d4 table th:nth-child(6), #tab-d4 table td:nth-child(6) {
+    min-width: 120px;
+    max-width: 200px;
+  }
+
+  #tab-d1 table th:nth-child(7), #tab-d1 table td:nth-child(7), /* Jam */
+  #tab-d2 table th:nth-child(7), #tab-d2 table td:nth-child(7),
+  #tab-d3 table th:nth-child(7), #tab-d3 table td:nth-child(7),
+  #tab-d4 table th:nth-child(7), #tab-d4 table td:nth-child(7) {
+    min-width: 40px;
+    text-align: center;
+  }
+
+  #tab-d1 table th:nth-child(8), #tab-d1 table td:nth-child(8), /* Masa */
+  #tab-d2 table th:nth-child(8), #tab-d2 table td:nth-child(8),
+  #tab-d3 table th:nth-child(8), #tab-d3 table td:nth-child(8),
+  #tab-d4 table th:nth-child(8), #tab-d4 table td:nth-child(8) {
+    min-width: 60px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  #tab-d1 table th:nth-child(9), #tab-d1 table td:nth-child(9), /* Jantina */
+  #tab-d2 table th:nth-child(9), #tab-d2 table td:nth-child(9),
+  #tab-d3 table th:nth-child(9), #tab-d3 table td:nth-child(9),
+  #tab-d4 table th:nth-child(9), #tab-d4 table td:nth-child(9) {
+    min-width: 60px;
+  }
+
+  #tab-d1 table th:nth-child(10), #tab-d1 table td:nth-child(10), /* Pejawatan */
+  #tab-d2 table th:nth-child(10), #tab-d2 table td:nth-child(10),
+  #tab-d3 table th:nth-child(10), #tab-d3 table td:nth-child(10),
+  #tab-d4 table th:nth-child(10), #tab-d4 table td:nth-child(10) {
+    min-width: 70px;
+  }
+
+  /* District header should span all columns */
   .district-header td {
     background-color: var(--navy-mid);
     color: var(--gold);
@@ -137,6 +206,180 @@
     font-size: 15px;
     padding: 8px 14px;
     text-align: left;
+  }
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-lain{background:#dcfce7;color:#15803d;} .badge-pejabat{background:#fef9c3;color:#854d0e;} .badge-rci{background:#fce7f3;color:#9d174d;} .badge-apr{background:#dbeafe;color:#1e40af;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+  .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+  .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+  .empty-icon{font-size:40px;margin-bottom:12px;} .empty-text{font-size:14px;font-weight:500;}
+  footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
+  
+  @media(max-width:1200px){
+    th, td {
+      padding: 8px 5px;
+      font-size: 12px;
+    }
+    th:nth-child(4), td:nth-child(4) {
+      min-width: 120px;
+    }
+  }
+  
+  @media(max-width:768px){
+    main{padding:16px;}
+    .grid-wide{grid-template-columns:1fr;}
+    header,.tabs{padding-left:16px;padding-right:16px;}
+    .login-box{margin:16px;padding:28px 24px;}
+    .table-wrap {
+      margin: 0 -16px;
+      border-radius: 0;
+      width: calc(100% + 32px);
+    }
+  }
+  
+  /* PNGs Card Styling - Fixed with consistent font sizes */
+  .pngs-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 18px;
+    width: 100%;
+    min-width: 380px;
+  }
+  
+  .pngs-header {
+    background: linear-gradient(135deg, var(--navy-dark), var(--navy-mid));
+    padding: 14px 16px 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .pngs-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: visible;
+    width: 100%;
+  }
+  
+  .pngs-date {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+  
+  .pngs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+  }
+  
+  .pngs-table th {
+    padding: 11px 8px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  
+  .pngs-table th.penugasan {
+    background: #c8c8c8;
+    color: #333;
+    text-align: left;
+    width: auto;
+    min-width: 100px;
+  }
+  
+  .pngs-table th.peg {
+    background: #f4a261;
+    color: white;
+    text-align: center;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+  }
+  
+  .pngs-table th.apr {
+    background: #4a90d9;
+    color: white;
+    text-align: center;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+  }
+  
+  .pngs-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e8e8c8;
+    background: #fffde8;
+    font-size: 15px;
+  }
+  
+  .pngs-table td.penugasan-cell {
+    font-weight: 600;
+    color: #333;
+    background: #fffde8;
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 8px;
+    font-size: 15px;
+  }
+  
+  .pngs-table td.peg-cell {
+    text-align: center;
+    font-weight: 600;
+    background: #fffde8;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    font-size: 15px;
+  }
+  
+  .pngs-table td.apr-cell {
+    text-align: center;
+    font-weight: 600;
+    background: #fffde8;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    font-size: 15px;
+  }
+  
+  .pngs-table tr.total-row td {
+    background: #d0d0d0;
+    font-weight: 700;
+    color: #222;
+    padding: 12px 8px;
+    border-top: 1px solid #aaa;
+  }
+  
+  .pngs-table tr.total-row td.penugasan-cell {
+    font-size: 15px;
+    background: #d0d0d0;
+    white-space: nowrap;
+    padding-left: 12px;
+  }
+  
+  .pngs-table tr.total-row td.peg-cell,
+  .pngs-table tr.total-row td.apr-cell {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    background: #d0d0d0;
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
   }
 
   .unlock-container {
@@ -240,12 +483,8 @@
     <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
   </div>
 </header>
-<div class="url-bar" id="urlBar" style="display:none;">
-  <label>📋 Apps Script URL:</label>
-  <input type="text" id="sheetUrl" readonly value="https://script.google.com/macros/s/AKfycbx4bVufZQt7TuPm8qzEMknqQkeNoDEJiMevGewmrxlKcY6eaZAIFmXMCgOtopek-8_r/exec"/>
-  <button class="btn-load" onclick="loadData()">Muat Data</button>
-  <span class="next-refresh" id="nextRefresh"></span>
-</div>
+<!-- URL Bar is hidden with CSS -->
+
 <div class="tabs">
   <div class="tab active" id="tab_btn_today" onclick="switchTab('today')">📅 Semua Daerah</div>
   <div class="tab d1"     id="tab_btn_d1"    onclick="switchTab('d1')">🔴 Melaka Tengah</div>
@@ -275,7 +514,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Daerah</div><div class="card-badge" id="today_b1">—</div></div><canvas id="today_c1"></canvas></div>
-      <div id="today_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
+      <div id="today_pngs_card" class="pngs-card"></div>
     </div>
     
     <div class="table-wrap">
@@ -294,12 +533,13 @@
               <th>Balai Pendaftaran</th>
               <th>Balai Bertugas</th>
               <th>Jenis Tugasan</th>
+              <th>Lain-lain Tugas</th>
               <th>Jam</th>
               <th>Masa Mula</th>
             </tr>
           </thead>
           <tbody id="today_table">
-            <tr><td colspan="9" class="loading">Memuatkan data...</td></tr>
+            <tr><td colspan="10" class="loading">Memuatkan data...</td></tr>
           </tbody>
         </table>
       </div>
@@ -317,7 +557,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d1_c1"></canvas></div>
-      <div id="d1_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
+      <div id="d1_pngs_card" class="pngs-card"></div>
     </div>
     
     <div class="unlock-container" id="unlockSectionD1">
@@ -341,6 +581,7 @@
                 <th>Nama & No. Badan</th>
                 <th>Balai Bertugas</th>
                 <th>Jenis Tugasan</th>
+                <th>Lain-lain Tugas</th>
                 <th>Jam</th>
                 <th>Masa Mula</th>
                 <th>Jantina</th>
@@ -348,7 +589,7 @@
               </tr>
             </thead>
             <tbody id="d1_table">
-              <tr><td colspan="9" class="loading">Memuatkan data...</td></tr>
+              <tr><td colspan="10" class="loading">Memuatkan data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -367,7 +608,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d2_c1"></canvas></div>
-      <div id="d2_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
+      <div id="d2_pngs_card" class="pngs-card"></div>
     </div>
     
     <div class="unlock-container" id="unlockSectionD2">
@@ -391,6 +632,7 @@
                 <th>Nama & No. Badan</th>
                 <th>Balai Bertugas</th>
                 <th>Jenis Tugasan</th>
+                <th>Lain-lain Tugas</th>
                 <th>Jam</th>
                 <th>Masa Mula</th>
                 <th>Jantina</th>
@@ -398,7 +640,7 @@
               </tr>
             </thead>
             <tbody id="d2_table">
-              <tr><td colspan="9" class="loading">Memuatkan data...</td></tr>
+              <tr><td colspan="10" class="loading">Memuatkan data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -417,7 +659,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d3_c1"></canvas></div>
-      <div id="d3_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
+      <div id="d3_pngs_card" class="pngs-card"></div>
     </div>
     
     <div class="unlock-container" id="unlockSectionD3">
@@ -441,6 +683,7 @@
                 <th>Nama & No. Badan</th>
                 <th>Balai Bertugas</th>
                 <th>Jenis Tugasan</th>
+                <th>Lain-lain Tugas</th>
                 <th>Jam</th>
                 <th>Masa Mula</th>
                 <th>Jantina</th>
@@ -448,7 +691,7 @@
               </tr>
             </thead>
             <tbody id="d3_table">
-              <tr><td colspan="9" class="loading">Memuatkan data...</td></tr>
+              <tr><td colspan="10" class="loading">Memuatkan data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -467,7 +710,7 @@
     </div>
     <div class="grid-wide">
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Balai</div></div><canvas id="d4_c1"></canvas></div>
-      <div id="d4_pngs_card" class="card" style="padding:0;overflow:hidden;"></div>
+      <div id="d4_pngs_card" class="pngs-card"></div>
     </div>
     
     <div class="unlock-container" id="unlockSectionD4">
@@ -491,6 +734,7 @@
                 <th>Nama & No. Badan</th>
                 <th>Balai Bertugas</th>
                 <th>Jenis Tugasan</th>
+                <th>Lain-lain Tugas</th>
                 <th>Jam</th>
                 <th>Masa Mula</th>
                 <th>Jantina</th>
@@ -498,7 +742,7 @@
               </tr>
             </thead>
             <tbody id="d4_table">
-              <tr><td colspan="9" class="loading">Memuatkan data...</td></tr>
+              <tr><td colspan="10" class="loading">Memuatkan data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -572,13 +816,50 @@ function getTodayFull(){ const n=new Date(), days=['Ahad','Isnin','Selasa','Rabu
 function normaliseDate(str){ if(!str) return ''; str=str.trim(); if(str.includes('T')){ const d=new Date(str); const myt=new Date(d.getTime()+8*60*60*1000); return myt.getUTCDate()+'/'+(myt.getUTCMonth()+1)+'/'+myt.getUTCFullYear(); } if(str.includes('-')){ const p=str.split('-'); if(p.length===3) return parseInt(p[2])+'/'+parseInt(p[1])+'/'+p[0]; } const p=str.split('/'); if(p.length===3) return parseInt(p[0])+'/'+parseInt(p[1])+'/'+p[2]; return str; }
 function normDaerah(s){ return String(s||'').toUpperCase().replace(/\s+/g,' ').trim(); }
 function formatTime(val){ if(!val||val===''||val==='0') return '—'; const s=String(val).trim(); if(/^\d{1,2}:\d{2}/.test(s)){ const p=s.split(':'); return p[0].padStart(2,'0')+':'+p[1]; } const match=s.match(/(\d{1,2}):(\d{2}):\d{2}/); if(match) return match[1].padStart(2,'0')+':'+match[2]; if(s.includes('T')){ const d=new Date(s); const myt=new Date(d.getTime()+8*60*60*1000); return String(myt.getUTCHours()).padStart(2,'0')+':'+String(myt.getUTCMinutes()).padStart(2,'0'); } const num=parseFloat(s); if(!isNaN(num)&&num>0&&num<1){ const t=Math.round(num*24*60); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); } return s; }
-function expandRows(rows){ const out=[]; rows.forEach(row=>{ const timestamp=String(row[0]||''); const daerah=normDaerah(row[1]); const bertugas=String(row[10]||'').trim(); const pejawatan=String(row[12]||'').trim(); const jantina=String(row[13]||'').trim(); const pangkat=String(row[14]||'').trim(); const tarikh=String(row[15]||'').trim(); const jenis=normalizeJenis(String(row[16]||'').trim()); const masa=formatTime(row[22]); const jam=parseFloat(row[18])||0; const lain=String(row[19]||'').trim(); const balai=[2,4,6,8].map(i=>String(row[i]||'').trim()).find(v=>v)||'—'; const nama=[3,5,7,9].map(i=>String(row[i]||'').trim()).find(v=>v)||''; if(!daerah) return; if(!nama&&balai==='—') return; out.push({timestamp,daerah,balai,nama:nama||balai,bertugas,pejawatan,jantina,pangkat,jenis,jam,masa,tarikh,lain}); }); return out; }
+function expandRows(rows){ 
+  const out=[]; 
+  rows.forEach(row=>{ 
+    const timestamp=String(row[0]||''); 
+    const daerah=normDaerah(row[1]); 
+    const bertugas=String(row[10]||'').trim(); 
+    const pejawatan=String(row[12]||'').trim(); 
+    const jantina=String(row[13]||'').trim(); 
+    const pangkat=String(row[14]||'').trim(); 
+    const tarikh=String(row[15]||'').trim(); 
+    const jenis=normalizeJenis(String(row[16]||'').trim()); 
+    const lain = String(row[19]||'').trim(); // Column for specifying other tasks
+    const masa=formatTime(row[22]); 
+    const jam=parseFloat(row[18])||0; 
+    const balai=[2,4,6,8].map(i=>String(row[i]||'').trim()).find(v=>v)||'—'; 
+    const nama=[3,5,7,9].map(i=>String(row[i]||'').trim()).find(v=>v)||''; 
+    if(!daerah) return; 
+    if(!nama&&balai==='—') return; 
+    out.push({timestamp,daerah,balai,nama:nama||balai,bertugas,pejawatan,jantina,pangkat,jenis,jam,masa,tarikh,lain}); 
+  }); 
+  return out; 
+}
 function normalizeJenis(j){ if(!j) return 'LAIN-LAIN TUGAS'; const u=j.toUpperCase().trim(); if(u.includes('SJR')) return 'SJR'; if(u.includes('MPV')) return 'MPV'; if(u.includes('PERTANYAAN')||u.includes('PEJABAT PERTANYAAN')) return 'PEJABAT PERTANYAAN'; if(u.includes('DCC')) return 'DCC'; if(u.includes('SENTRI')||u.includes('PROWLER')) return 'SENTRI / PROWLER'; if(u.includes('BIT')||u.includes('RONDAAN')) return 'BIT/RONDAAN'; if(u.includes('PENTADBIRAN')||u.includes('ADMIN')) return 'TUGAS PENTADBIRAN'; return 'LAIN-LAIN TUGAS'; }
 function badgeClass(j){ if(!j)return''; const u=j.toUpperCase(); if(u.includes('LAIN'))return'badge-lain'; if(u.includes('PERTANYAAN')||u.includes('PEJABAT'))return'badge-pejabat'; if(u.includes('SJR'))return'badge-rci'; if(u.includes('MPV'))return'badge-rci'; if(u.includes('DCC'))return'badge-lain'; if(u.includes('SENTRI')||u.includes('PROWLER'))return'badge-pejabat'; if(u.includes('BIT')||u.includes('RONDAAN'))return'badge-apr'; if(u.includes('PENTADBIRAN'))return'badge-rci'; return'badge-apr'; }
 function isPeg(d){ const p=String(d.pejawatan||'').toUpperCase().trim(); const pangkat=String(d.pangkat||'').toUpperCase().trim(); if(p.includes('PEG')||p.includes('PEGAWAI')) return true; if(pangkat.includes('INSP')||pangkat.includes('DSP')||pangkat.includes('ASP')||pangkat.includes('SUPT')||pangkat.includes('DCP')||pangkat.includes('CP')||pangkat.includes('KPP')||pangkat.includes('KDSP')||pangkat.includes('ACP')) return true; return false; }
 function countBy(data,key){ const m={}; data.forEach(d=>{ const v=d[key]||'Lain'; m[v]=(m[v]||0)+1; }); return m; }
 function makeChart(id,type,labels,values,colors){ if(charts[id]) charts[id].destroy(); const el=document.getElementById(id); if(!el) return; charts[id]=new Chart(el.getContext('2d'),{type,data:{labels,datasets:[{data:values,backgroundColor:colors.slice(0,values.length),borderColor:colors.slice(0,values.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:type==='doughnut',position:'right',labels:{font:{family:'Inter',size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}},scales:type!=='doughnut'?{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},maxRotation:40}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Inter',size:10}}}}:{}}}); }
 function showAlert(type,msg){ const el=document.getElementById(type==='error'?'alertError':'alertInfo'); if(el){el.textContent=msg;el.style.display=msg?'block':'none';} }
+
+// Add enter key functionality for login
+document.addEventListener('DOMContentLoaded', function() {
+  const loginUser = document.getElementById('loginUser');
+  const loginToken = document.getElementById('loginToken');
+  
+  function handleEnterKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      doLogin();
+    }
+  }
+  
+  loginUser.addEventListener('keypress', handleEnterKey);
+  loginToken.addEventListener('keypress', handleEnterKey);
+});
 
 async function doLogin() {
   const username = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -642,15 +923,14 @@ function showDashboard() {
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('dashboardPage').style.display = 'block';
   document.getElementById('userPillName').textContent = currentUser.username.toUpperCase();
-  document.getElementById('sheetUrl').value = APPS_SCRIPT_URL;
+  
+  // URL Bar is hidden by CSS
 
   if (currentUser.role === 'admin') {
-    document.getElementById('urlBar').style.display = 'flex';
     ['today','d1','d2','d3','d4'].forEach(t => document.getElementById('tab_btn_'+t).classList.remove('hidden'));
     document.getElementById('tab_btn_log').classList.remove('hidden');
     switchTab('today');
   } else {
-    document.getElementById('urlBar').style.display = 'none';
     ['today','d1','d2','d3','d4'].forEach(t => document.getElementById('tab_btn_'+t).classList.add('hidden'));
     document.getElementById('tab_btn_' + currentUser.district).classList.remove('hidden');
     document.getElementById('tab_btn_log').classList.add('hidden');
@@ -815,7 +1095,7 @@ function renderSemuaDaerahTab(data, dateStr) {
 
   const tbody = document.getElementById('today_table');
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
     return;
   }
 
@@ -833,16 +1113,17 @@ function renderSemuaDaerahTab(data, dateStr) {
   const sortedDistricts = Object.keys(groupedByDistrict).sort();
 
   sortedDistricts.forEach(district => {
-    html += `<tr class="district-header"><td colspan="9"><strong>📍 ${district}</strong> (${groupedByDistrict[district].length} anggota)</td></tr>`;
+    html += `<tr class="district-header"><td colspan="10"><strong>📍 ${district}</strong> (${groupedByDistrict[district].length} anggota)</td></tr>`;
     groupedByDistrict[district].forEach(r => {
       html += `<tr>
-        <td style="color:var(--muted);font-size:11px;">${globalCounter++}</td>
+        <td style="color:var(--muted);font-size:11px;text-align:center;">${globalCounter++}</td>
         <td style="font-size:11px;">${r.timestamp ? new Date(r.timestamp).toLocaleString('ms-MY') : '—'}</td>
         <td><strong style="color:var(--navy)">${r.daerah}</strong></td>
         <td><strong>${r.nama}</strong></td>
         <td style="font-size:12px;">${r.balai.replace('BALAI POLIS ', '')}</td>
         <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ', '')}</td>
         <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis || '—'}</span></td>
+        <td style="font-size:12px;max-width:200px;">${r.lain || '—'}</td>
         <td><strong>${r.jam || '—'}</strong></td>
         <td>${r.masa || '—'}</td>
       </tr>`;
@@ -874,16 +1155,17 @@ function renderDistrictTab(key, data, dateStr) {
   if (unlockedTabs[key]) {
     const tbody = document.getElementById(pre + 'table');
     if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
       return;
     }
     
     tbody.innerHTML = data.map((r, i) => `<tr>
-      <td style="color:var(--muted);font-size:11px;">${i+1}</td>
+      <td style="color:var(--muted);font-size:11px;text-align:center;">${i+1}</td>
       <td style="font-size:12px;">${r.pangkat || '—'}</td>
       <td><strong>${r.nama}</strong></td>
       <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ', '')}</td>
       <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis || '—'}</span></td>
+      <td style="font-size:12px;max-width:200px;">${r.lain || '—'}</td>
       <td><strong>${r.jam || '—'}</strong></td>
       <td>${r.masa || '—'}</td>
       <td>${r.jantina || '—'}</td>
@@ -912,30 +1194,38 @@ function renderPenugasanCard(cardId, data, dateStr, isAll) {
 
   let rows = '';
   JENIS_ORDER.forEach(j => {
-    rows += `<tr><td style="padding:7px 14px;background:#fffde8;font-size:13px;font-weight:600;color:#333;border-bottom:1px solid #e8e8c8;">${j}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].peg}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].apr}</td></tr>`;
+    rows += `<tr>
+      <td class="penugasan-cell">${j}</td>
+      <td class="peg-cell">${counts[j].peg}</td>
+      <td class="apr-cell">${counts[j].apr}</td>
+    </tr>`;
   });
 
-  const cardTitle = isAll ? '📋 Jumlah Penugasan Harian Daerah-Daerah melaka' : '📋 Penugasan Harian';
+  const cardTitle = isAll ? 'JUMLAH PENUGASAN HARIAN' : 'PENUGASAN HARIAN';
 
   card.innerHTML = `
-    <div style="padding:14px 16px 10px;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:0;">
-      <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;">${cardTitle}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">${dateStr}</div>
+    <div class="pngs-header">
+      <div class="pngs-title">${cardTitle}</div>
+      <div class="pngs-date">${dateStr}</div>
     </div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-    <thead><tr>
-      <th style="padding:11px 14px;background:#c8c8c8;text-align:left;font-size:12px;font-weight:700;color:#333;letter-spacing:.05em;text-transform:uppercase;">PENUGASAN</th>
-      <th style="padding:11px 14px;background:#f4a261;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">PEG</th>
-      <th style="padding:11px 14px;background:#4a90d9;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">APR</th>
-    </tr></thead>
-    <tbody>${rows}
-      <tr>
-        <td style="padding:10px 14px;background:#d0d0d0;font-weight:700;font-size:13px;color:#222;">JUMLAH KESELURUHAN</td>
-        <td style="padding:10px 14px;background:#f4a261;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalPeg}</td>
-        <td style="padding:10px 14px;background:#4a90d9;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalApr}</td>
-      </tr>
-    </tbody>
-  </table>`;
+    <table class="pngs-table">
+      <thead>
+        <tr>
+          <th class="penugasan">PENUGASAN</th>
+          <th class="peg">PEG</th>
+          <th class="apr">APR</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">
+          <td class="penugasan-cell">JUMLAH KESELURUHAN</td>
+          <td class="peg-cell">${totalPeg}</td>
+          <td class="apr-cell">${totalApr}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
 }
 
 function renderSummaryTable(containerId, data) {
