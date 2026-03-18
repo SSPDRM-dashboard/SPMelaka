@@ -260,6 +260,13 @@
       <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Daerah</div><div class="card-badge" id="today_b1">—</div></div><canvas id="today_c1"></canvas></div>
       <div id="today_pngs_card" class="pngs-card"></div>
     </div>
+    <!-- 4 district charts by Balai Bertugas -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:18px;">
+      <div class="card"><div class="card-header"><div class="card-title" style="color:#b91c1c;">🔴 Melaka Tengah — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d1_badge">—</div></div><canvas id="today_c_d1"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title" style="color:#15803d;">🟢 Jasin — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d2_badge">—</div></div><canvas id="today_c_d2"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title" style="color:#b45309;">🟡 Alor Gajah — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d3_badge">—</div></div><canvas id="today_c_d3"></canvas></div>
+      <div class="card"><div class="card-header"><div class="card-title" style="color:#7c3aed;">🟣 IPK SSPDRM — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d4_badge">—</div></div><canvas id="today_c_d4"></canvas></div>
+    </div>
     <div class="table-wrap">
       <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota Bertugas Hari Ini</div><div class="card-badge" id="today_tb">—</div></div>
       <div style="overflow-x:auto;margin-top:12px;">
@@ -493,7 +500,7 @@ function expandRows(rows){
   rows.forEach(row=>{
     const timestamp=String(row[0]||'');
     const daerah=normDaerah(row[1]);
-    const bertugas=String(row[10]||'').trim();
+    const bertugas=[2,4,6,8].map(i=>String(row[i]||'').trim()).find(v=>v)||'—';
     const pejawatan=String(row[12]||'').trim();
     const jantina=String(row[13]||'').trim();
     const pangkat=String(row[14]||'').trim();
@@ -502,7 +509,7 @@ function expandRows(rows){
     const lain=String(row[19]||'').trim();
     const masa=formatTime(row[22]);
     const jam=parseFloat(row[18])||0;
-    const balai=[2,4,6,8].map(i=>String(row[i]||'').trim()).find(v=>v)||'—';
+    const balai=String(row[10]||'').trim()||'—';
     const nama=[3,5,7,9].map(i=>String(row[i]||'').trim()).find(v=>v)||'';
     if(!daerah) return;
     if(!nama&&balai==='—') return;
@@ -822,13 +829,32 @@ function renderSemuaDaerahTab(data,dateStr){
   document.getElementById('today_k1').textContent=data.length;
   document.getElementById('today_k2').textContent=new Set(data.map(d=>d.daerah).filter(Boolean)).size;
   document.getElementById('today_k3').textContent=totalJam;
-  document.getElementById('today_k4').textContent=new Set(data.map(d=>d.balai).filter(Boolean)).size;
+  document.getElementById('today_k4').textContent=new Set(data.map(d=>d.bertugas).filter(Boolean)).size;
   document.getElementById('today_k5').textContent=new Set(data.map(d=>d.jenis).filter(Boolean)).size;
   document.getElementById('today_b1').textContent=data.length+' rekod';
   document.getElementById('today_tb').textContent=data.length+' anggota';
   const byDaerah=countBy(data,'daerah');
   makeChart('today_c1','bar',Object.keys(byDaerah),Object.values(byDaerah),COLORS);
   renderPenugasanCard('today_pngs_card',data,dateStr,true);
+
+  // Render 4 per-district charts by Balai Bertugas
+  const DISTRICT_CHART_MAP = [
+    { key:'d1', daerah:'MELAKA TENGAH', chartId:'today_c_d1', badgeId:'today_d1_badge' },
+    { key:'d2', daerah:'JASIN',         chartId:'today_c_d2', badgeId:'today_d2_badge' },
+    { key:'d3', daerah:'ALOR GAJAH',    chartId:'today_c_d3', badgeId:'today_d3_badge' },
+    { key:'d4', daerah:'IPK SSPDRM',    chartId:'today_c_d4', badgeId:'today_d4_badge' },
+  ];
+  DISTRICT_CHART_MAP.forEach(({daerah, chartId, badgeId}) => {
+    const distData = data.filter(d => normDaerah(d.daerah) === daerah);
+    const byB = countBy(distData, 'bertugas');
+    const badge = document.getElementById(badgeId);
+    if(badge) badge.textContent = distData.length + ' anggota';
+    makeChart(chartId, 'bar',
+      Object.keys(byB).map(l => l.replace('BALAI POLIS ','')),
+      Object.values(byB),
+      COLORS
+    );
+  });
   const tbody=document.getElementById('today_table');
   if(!data.length){
     tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
@@ -869,10 +895,10 @@ function renderDistrictTab(key,data,dateStr){
   const totalJam=data.reduce((s,d)=>s+(d.jam||0),0);
   document.getElementById(pre+'k1').textContent=data.length;
   document.getElementById(pre+'k2').textContent=totalJam;
-  document.getElementById(pre+'k3').textContent=new Set(data.map(d=>d.balai).filter(Boolean)).size;
+  document.getElementById(pre+'k3').textContent=new Set(data.map(d=>d.bertugas).filter(Boolean)).size;
   document.getElementById(pre+'k4').textContent=new Set(data.map(d=>d.jenis).filter(Boolean)).size;
   document.getElementById(pre+'tb').textContent=data.length+' anggota';
-  const byBalai=countBy(data,'balai');
+  const byBalai=countBy(data,'bertugas');
   makeChart(pre+'c1','bar',Object.keys(byBalai).map(l=>l.replace('BALAI POLIS ','')),Object.values(byBalai),COLORS);
   renderPenugasanCard(key+'_pngs_card',data,dateStr,false);
   if(unlockedTabs[key]){
@@ -925,7 +951,7 @@ function renderSummaryTable(containerId,data){
   if(!data.length) return;
   const JENIS_ORDER=['SJR','MPV','PEJABAT PERTANYAAN','DCC','SENTRI / PROWLER','BIT/RONDAAN','TUGAS PENTADBIRAN','LAIN-LAIN TUGAS'];
   const map={};
-  data.forEach(d=>{ const balai=d.balai||'—'; const jenis=d.jenis||'LAIN-LAIN TUGAS'; const key=balai+'|||'+jenis; map[key]=(map[key]||0)+1; });
+  data.forEach(d=>{ const balai=d.bertugas||'—'; const jenis=d.jenis||'LAIN-LAIN TUGAS'; const key=balai+'|||'+jenis; map[key]=(map[key]||0)+1; });
   const rows=Object.entries(map).map(([k,v])=>{ const [b,j]=k.split('|||'); return{balai:b,jenis:j,count:v}; });
   rows.sort((a,b)=>a.balai.localeCompare(b.balai)||a.jenis.localeCompare(b.jenis));
   const byBalai={};
