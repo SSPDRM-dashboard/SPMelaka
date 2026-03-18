@@ -387,7 +387,7 @@
         <div class="card-title">Rekod Log Masuk</div>
         <!-- FIX #11: clearLog removed — not implemented, button removed to avoid confusing users -->
       </div>
-      <div style="overflow-x:auto;"><table><thead><tr><th>#</th><th>Nama Pengguna</th><th>Peranan</th><th>Tab Diakses</th><th>Tarikh Login</th><th>Masa Login</th><th>Masa Logout</th><th>Device Info</th></tr></thead><tbody id="log_table"><tr><td colspan="8" class="loading">Tiada rekod log</td></tr></tbody></table></div>
+      <div style="overflow-x:auto;"><table><thead><tr><th>#</th><th>Nama Pengguna</th><th>Peranan</th><th>Tab Diakses</th><th>Tarikh Login</th><th>Masa Login</th><th>Masa Logout</th></tr></thead><tbody id="log_table"><tr><td colspan="7" class="loading">Tiada rekod log</td></tr></tbody></table></div>
     </div>
   </div>
 </main>
@@ -665,8 +665,12 @@ async function fetchDistrictPasswords(){
 async function saveLog(action){
   if(!currentUser||!currentToken) return;
   const now=new Date();
-  const logData={action,username:currentUser.username,role:currentUser.role,tab:currentUser.role==='admin'?'Semua Tab':(TAB_LABELS[currentUser.district]||''),loginDate:now.toLocaleDateString('ms-MY'),loginTime:now.toLocaleTimeString('ms-MY'),deviceInfo:navigator.userAgent};
-  if(action==='logout') logData.logoutTime=now.toLocaleTimeString('ms-MY');
+  // Format date/time explicitly so all browsers produce the same output
+  const _pad = n => String(n).padStart(2,'0');
+  const _dateStr = _pad(now.getDate())+'/'+_pad(now.getMonth()+1)+'/'+now.getFullYear();
+  const _timeStr = _pad(now.getHours())+':'+_pad(now.getMinutes())+':'+_pad(now.getSeconds());
+  const logData={action,username:currentUser.username,role:currentUser.role,tab:currentUser.role==='admin'?'Semua Tab':(TAB_LABELS[currentUser.district]||''),loginDate:_dateStr,loginTime:_timeStr};
+  if(action==='logout') logData.logoutTime=_timeStr;
   const url=`${APPS_SCRIPT_URL}?action=saveLog&username=${encodeURIComponent(currentUser.username)}&token=${encodeURIComponent(currentToken)}&data=${encodeURIComponent(JSON.stringify(logData))}`;
   try{ await fetch(url); }catch(e){}
 }
@@ -741,12 +745,19 @@ async function renderLogTab(){
     const logs=data.logs||[];
     document.getElementById('log_count').textContent=logs.length;
     document.getElementById('log_k1').textContent=logs.length;
-    document.getElementById('log_k2').textContent=logs.filter(l=>l.loginDate===new Date().toLocaleDateString('ms-MY')).length;
+    const _n=new Date(),_td=String(_n.getDate()).padStart(2,'0')+'/'+String(_n.getMonth()+1).padStart(2,'0')+'/'+_n.getFullYear();
+    document.getElementById('log_k2').textContent=logs.filter(l=>l.loginDate===_td).length;
     document.getElementById('log_k3').textContent=new Set(logs.map(l=>l.username)).size;
     document.getElementById('log_k4').textContent=logs.filter(l=>l.role==='admin').length;
     const tbody=document.getElementById('log_table');
     if(!logs.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Tiada rekod log</td></tr>'; return; }
-    tbody.innerHTML=logs.map((l,i)=>`<tr><td style="color:var(--muted);font-size:11px;">${i+1}</td><td><strong>${l.username}</strong></td><td><span class="badge ${l.role==='admin'?'badge-rci':'badge-apr'}">${l.role==='admin'?'Admin':'Daerah'}</span></td><td style="font-size:12px;">${l.tab}</td><td style="font-size:12px;">${l.loginDate}</td><td><strong>${l.loginTime}</strong></td><td style="font-size:12px;">${l.logoutTime||'—'}</td><td style="font-size:12px;color:var(--muted);">${l.deviceInfo}</td></tr>`).join('');
+    const _extractTime = t => {
+      if(!t||t==='—') return '—';
+      // Already HH:MM or HH:MM:SS
+      const m = String(t).match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
+      return m ? m[1] : t;
+    };
+    tbody.innerHTML=logs.map((l,i)=>`<tr><td style="color:var(--muted);font-size:11px;">${i+1}</td><td><strong>${l.username}</strong></td><td><span class="badge ${l.role==='admin'?'badge-rci':'badge-apr'}">${l.role==='admin'?'Admin':'Daerah'}</span></td><td style="font-size:12px;">${l.tab}</td><td style="font-size:12px;">${l.loginDate}</td><td><strong>${_extractTime(l.loginTime)}</strong></td><td style="font-size:12px;">${_extractTime(l.logoutTime||'—')}</td></tr>`).join('');
   } catch(e){
     document.getElementById('log_table').innerHTML='<tr><td colspan="8" class="loading">Gagal memuat log</td></tr>';
   }
