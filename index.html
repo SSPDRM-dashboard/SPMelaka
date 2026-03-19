@@ -7,62 +7,85 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--navy:#003087;--navy-dark:#001f5c;--navy-mid:#0a3fa8;--gold:#FFD700;--gold-dark:#c9a800;--dark:#0f172a;--muted:#64748b;--card:#fff;--bg:#f1f5f9;--border:#e2e8f0;--red:#dc2626;--green:#16a34a;--amber:#d97706;}
+  :root{
+    --navy:#003087;--navy-dark:#001f5c;--navy-mid:#0a3fa8;
+    --gold:#FFD700;--gold-dark:#c9a800;
+    --dark:#0f172a;--muted:#64748b;--card:#fff;--bg:#f1f5f9;--border:#e2e8f0;
+    --red:#dc2626;--green:#16a34a;--amber:#d97706;
+    /* Standardised font sizes */
+    --fs-xs:11px;   /* labels, footnotes only */
+    --fs-sm:12px;   /* badges, meta, secondary */
+    --fs-base:13px; /* table data, body text */
+    --fs-md:14px;   /* input, button, card text */
+    --fs-lg:15px;   /* subheadings */
+    --fs-xl:16px;   /* card titles */
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:var(--fs-base);}
 
   /* =====================
      LOGIN PAGE
   ===================== */
   #loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 60%,#1d4ed8 100%);position:fixed;inset:0;z-index:999;}
   .login-box{background:white;border-radius:20px;padding:40px 44px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,0.35);text-align:center;}
-  .login-logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px;}
+
+  /* Logo with SVG badge fallback */
+  .login-logo-wrap{margin-bottom:16px;display:flex;align-items:center;justify-content:center;}
+  .login-logo{width:100px;height:100px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,48,135,0.18));}
+  .login-logo-fallback{display:none;width:100px;height:100px;}
+
   .login-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.04em;margin-bottom:4px;}
-  .login-sub{font-size:12px;color:var(--muted);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
+  .login-sub{font-size:var(--fs-sm);color:var(--muted);margin-bottom:28px;letter-spacing:.06em;text-transform:uppercase;}
   .login-field{margin-bottom:16px;text-align:left;}
-  .login-field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-  .login-field input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--dark);transition:border-color .2s;}
+  .login-field label{font-size:var(--fs-sm);font-weight:600;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+  .login-field input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:var(--fs-md);font-family:'Inter',sans-serif;outline:none;color:var(--dark);transition:border-color .2s;}
   .login-field input:focus{border-color:var(--navy);}
-  .btn-login{width:100%;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.04em;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:white;border:none;border-radius:10px;padding:13px;font-size:var(--fs-md);font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.04em;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
   .btn-login:hover{opacity:.9;}
   .btn-login:disabled{opacity:0.7;cursor:not-allowed;}
-  .login-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:14px;display:none;}
+  .login-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;border-radius:8px;padding:10px 14px;font-size:var(--fs-base);margin-top:14px;display:none;}
 
-  /* FIX #9 — proper CSS spinner, no rotating emoji */
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;flex-shrink:0;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .login-footer{font-size:11px;color:var(--muted);margin-top:20px;}
+  .login-footer{font-size:var(--fs-sm);color:var(--muted);margin-top:20px;line-height:1.6;}
   .login-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
-
-  /* Warmup status indicator */
-  .warmup-status{font-size:11px;color:var(--muted);margin-top:10px;min-height:16px;transition:color .3s;}
+  .warmup-status{font-size:var(--fs-sm);color:var(--muted);margin-top:10px;min-height:16px;transition:color .3s;}
   .warmup-status.ready{color:#16a34a;}
   .warmup-status.connecting{color:#d97706;}
 
   /* =====================
-     DASHBOARD
+     DASHBOARD HEADER
   ===================== */
   #dashboardPage{display:none;}
   header{background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy-mid) 100%);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,48,135,0.4);border-bottom:3px solid var(--gold);}
   .header-left{display:flex;align-items:center;gap:16px;}
+
+  /* Header logo with inline SVG fallback */
+  .pdrm-logo-wrap{width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .pdrm-logo{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+  .pdrm-logo-fallback{display:none;width:40px;height:40px;background:var(--gold);border-radius:50%;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--navy-dark);text-align:center;line-height:1.2;}
+
   .header-titles{display:flex;flex-direction:column;}
   .header-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:white;letter-spacing:.05em;line-height:1.1;}
-  .header-sub{font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:.08em;text-transform:uppercase;}
+  .header-sub{font-size:var(--fs-sm);color:rgba(255,255,255,0.7);letter-spacing:.06em;text-transform:uppercase;}
   .header-right{display:flex;align-items:center;gap:12px;}
   .live-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:5px 12px;}
   .live-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
-  .live-text{font-size:12px;color:white;font-weight:500;}
+  .live-text{font-size:var(--fs-base);color:white;font-weight:500;}
   .date-day{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--gold);}
+  .header-time{font-size:var(--fs-sm);color:rgba(255,255,255,0.6);}
   .user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;}
-  .user-pill span{font-size:12px;color:white;font-weight:600;}
-  .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
+  .user-pill span{font-size:var(--fs-base);color:white;font-weight:600;}
+  .btn-logout{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 12px;font-size:var(--fs-base);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
   .btn-logout:hover{background:rgba(255,255,255,0.25);}
-  .url-bar{display:none !important;}
+
+  /* =====================
+     TABS
+  ===================== */
   .tabs{background:white;border-bottom:2px solid var(--border);padding:0 32px;display:flex;gap:0;overflow-x:auto;}
-  .tab{padding:14px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
+  .tab{padding:14px 22px;font-size:var(--fs-base);font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;}
   .tab:hover{color:var(--navy);}
   .tab.active{color:var(--navy);border-bottom-color:var(--navy);}
   .tab.d1.active{color:#b91c1c;border-bottom-color:#b91c1c;}
@@ -70,10 +93,16 @@
   .tab.d3.active{color:#b45309;border-bottom-color:#b45309;}
   .tab.d4.active{color:#7c3aed;border-bottom-color:#7c3aed;}
   .tab.hidden{display:none;}
+
+  /* =====================
+     MAIN / LAYOUT
+  ===================== */
   main{padding:24px 32px;max-width:1400px;margin:0 auto;}
-  .alert{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:16px;display:none;}
+  .alert{border-radius:10px;padding:12px 16px;font-size:var(--fs-base);margin-bottom:16px;display:none;}
   .alert-error{background:#FFF0F0;border:1px solid #FFCDD2;color:#C0392B;}
   .alert-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1e40af;}
+
+  /* DATE BANNER */
   .date-banner{border-radius:14px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:white;}
   .date-banner.navy{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);}
   .date-banner.red{background:linear-gradient(135deg,#991b1b 0%,#dc2626 100%);}
@@ -83,146 +112,390 @@
   .date-banner-left{display:flex;align-items:center;gap:12px;}
   .date-icon{font-size:28px;}
   .date-banner-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);}
-  .date-banner-sub{font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px;}
+  .date-banner-sub{font-size:var(--fs-base);color:rgba(255,255,255,0.7);margin-top:2px;}
   .date-banner-count{text-align:right;}
   .date-banner-num{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
-  .date-banner-label{font-size:11px;color:rgba(255,255,255,0.7);}
+  .date-banner-label{font-size:var(--fs-sm);color:rgba(255,255,255,0.7);}
+
+  /* KPI CARDS */
   .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
   .kpi{background:var(--card);border-radius:12px;padding:18px 20px;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
   .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
   .kpi-icon{font-size:20px;margin-bottom:8px;}
-  .kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  .kpi-label{font-size:var(--fs-sm);font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
   .kpi-value{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;color:var(--dark);line-height:1;}
-  .kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .kpi-sub{font-size:var(--fs-sm);color:var(--muted);margin-top:4px;}
   .kpi-bar{position:absolute;bottom:0;left:0;right:0;height:3px;}
-  .kpi-bar.navy{background:var(--navy);} .kpi-bar.gold{background:var(--gold-dark);} .kpi-bar.green{background:var(--green);} .kpi-bar.red{background:var(--red);} .kpi-bar.amber{background:var(--amber);}
-  .grid-wide{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px;}
-  .card{background:var(--card);border-radius:12px;padding:20px 22px;border:1px solid var(--border);margin-bottom:18px;}
+  .kpi-bar.navy{background:var(--navy);}
+  .kpi-bar.gold{background:var(--gold-dark);}
+  .kpi-bar.green{background:var(--green);}
+  .kpi-bar.red{background:var(--red);}
+  .kpi-bar.amber{background:var(--amber);}
+
+  /* CARDS / GRID */
+  .grid-wide{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:18px;align-items:start;}
+  .card{background:var(--card);border-radius:12px;padding:16px 18px;border:1px solid var(--border);margin-bottom:18px;}
   .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .card-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--dark);}
-  .card-badge{font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--muted);font-weight:600;}
-  .card canvas{max-height:220px;}
+  .card-title{font-family:'Rajdhani',sans-serif;font-size:var(--fs-xl);font-weight:700;color:var(--dark);}
+  .card-badge{font-size:var(--fs-sm);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 8px;color:var(--muted);font-weight:600;}
+  .card canvas{max-height:160px;}
+
+  /* =====================
+     TABLE — Unified, clean column rules
+  ===================== */
   .table-wrap{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow-x:auto;margin-bottom:18px;max-width:100%;}
-  table{width:100%;border-collapse:collapse;font-size:13px;table-layout:auto;}
-  th{padding:10px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
-  td{padding:10px 8px;border-bottom:1px solid var(--border);color:var(--dark);word-break:break-word;}
-  th:first-child,td:first-child{width:35px;min-width:35px;max-width:35px;text-align:center !important;padding-left:2px !important;padding-right:2px !important;}
-  th:nth-child(2),td:nth-child(2){min-width:70px;max-width:90px;font-size:10px !important;}
+  table{width:100%;border-collapse:collapse;font-size:var(--fs-base);table-layout:auto;}
+
+  /* Header */
+  th{
+    padding:11px 10px;
+    text-align:left;
+    font-size:var(--fs-sm);
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    white-space:nowrap;
+    background:#f8fafc;
+    border-bottom:2px solid var(--border);
+  }
+  /* Data cells */
+  td{
+    padding:10px 10px;
+    border-bottom:1px solid var(--border);
+    color:var(--dark);
+    font-size:var(--fs-base);
+    vertical-align:middle;
+  }
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafbfd;}
+
+  /* Column 1 — Row number */
+  th:first-child,td:first-child{
+    width:36px;min-width:36px;max-width:36px;
+    text-align:center;
+    padding-left:6px;padding-right:6px;
+    color:var(--muted);font-size:var(--fs-xs);
+  }
+  /* Column 2 — Timestamp / Pangkat */
+  th:nth-child(2),td:nth-child(2){
+    min-width:80px;max-width:100px;
+    font-size:var(--fs-sm);
+  }
+  /* Column 3 — Daerah */
   th:nth-child(3),td:nth-child(3){min-width:90px;}
-  th:nth-child(4),td:nth-child(4){min-width:150px;}
-  th:nth-child(5),td:nth-child(5){min-width:100px;}
-  th:nth-child(6),td:nth-child(6){min-width:100px;}
-  th:nth-child(7),td:nth-child(7){min-width:100px;}
+  /* Column 4 — Nama & No Badan */
+  th:nth-child(4),td:nth-child(4){min-width:140px;}
+  /* Column 5 — Balai Pendaftaran / Jenis */
+  th:nth-child(5),td:nth-child(5){min-width:110px;}
+  /* Column 6 — Balai Bertugas / Lain2 */
+  th:nth-child(6),td:nth-child(6){min-width:110px;max-width:200px;}
+  /* Column 7 — Jenis Tugasan / Jam */
+  th:nth-child(7),td:nth-child(7){min-width:110px;text-align:left;}
+  /* Column 8 — Lain-lain / Masa */
   th:nth-child(8),td:nth-child(8){min-width:120px;max-width:200px;}
-  th:nth-child(9),td:nth-child(9){min-width:40px;text-align:center;}
-  th:nth-child(10),td:nth-child(10){min-width:60px;white-space:nowrap;text-align:center;}
-  #tab-d1 table th:nth-child(5),#tab-d1 table td:nth-child(5),
-  #tab-d2 table th:nth-child(5),#tab-d2 table td:nth-child(5),
-  #tab-d3 table th:nth-child(5),#tab-d3 table td:nth-child(5),
-  #tab-d4 table th:nth-child(5),#tab-d4 table td:nth-child(5){min-width:100px;}
-  #tab-d1 table th:nth-child(6),#tab-d1 table td:nth-child(6),
-  #tab-d2 table th:nth-child(6),#tab-d2 table td:nth-child(6),
-  #tab-d3 table th:nth-child(6),#tab-d3 table td:nth-child(6),
-  #tab-d4 table th:nth-child(6),#tab-d4 table td:nth-child(6){min-width:120px;max-width:200px;}
-  #tab-d1 table th:nth-child(7),#tab-d1 table td:nth-child(7),
-  #tab-d2 table th:nth-child(7),#tab-d2 table td:nth-child(7),
-  #tab-d3 table th:nth-child(7),#tab-d3 table td:nth-child(7),
-  #tab-d4 table th:nth-child(7),#tab-d4 table td:nth-child(7){min-width:40px;text-align:center;}
-  #tab-d1 table th:nth-child(8),#tab-d1 table td:nth-child(8),
-  #tab-d2 table th:nth-child(8),#tab-d2 table td:nth-child(8),
-  #tab-d3 table th:nth-child(8),#tab-d3 table td:nth-child(8),
-  #tab-d4 table th:nth-child(8),#tab-d4 table td:nth-child(8){min-width:60px;white-space:nowrap;text-align:center;}
-  #tab-d1 table th:nth-child(9),#tab-d1 table td:nth-child(9),
-  #tab-d2 table th:nth-child(9),#tab-d2 table td:nth-child(9),
-  #tab-d3 table th:nth-child(9),#tab-d3 table td:nth-child(9),
-  #tab-d4 table th:nth-child(9),#tab-d4 table td:nth-child(9){min-width:60px;}
-  #tab-d1 table th:nth-child(10),#tab-d1 table td:nth-child(10),
-  #tab-d2 table th:nth-child(10),#tab-d2 table td:nth-child(10),
-  #tab-d3 table th:nth-child(10),#tab-d3 table td:nth-child(10),
-  #tab-d4 table th:nth-child(10),#tab-d4 table td:nth-child(10){min-width:70px;}
-  .district-header td{background-color:var(--navy-mid);color:var(--gold);font-family:'Rajdhani',sans-serif;font-size:15px;padding:8px 14px;text-align:left;}
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-  .badge-lain{background:#dcfce7;color:#15803d;} .badge-pejabat{background:#fef9c3;color:#854d0e;} .badge-rci{background:#fce7f3;color:#9d174d;} .badge-apr{background:#dbeafe;color:#1e40af;}
-  .tab-content{display:none;} .tab-content.active{display:block;}
-  .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+  /* Column 9 — Jam */
+  th:nth-child(9),td:nth-child(9){
+    min-width:48px;max-width:60px;
+    text-align:center;
+    font-weight:600;
+  }
+  /* Column 10 — Masa Mula */
+  th:nth-child(10),td:nth-child(10){
+    min-width:65px;
+    text-align:center;
+    white-space:nowrap;
+  }
+
+  /* District tabs: fewer columns (10 cols, different order) */
+  #tab-d1 table td:nth-child(9),#tab-d2 table td:nth-child(9),
+  #tab-d3 table td:nth-child(9),#tab-d4 table td:nth-child(9){
+    min-width:70px;text-align:left;font-weight:400;
+  }
+  #tab-d1 table td:nth-child(10),#tab-d2 table td:nth-child(10),
+  #tab-d3 table td:nth-child(10),#tab-d4 table td:nth-child(10){
+    min-width:90px;text-align:left;
+  }
+
+  /* District header rows */
+  .district-header td{
+    background-color:var(--navy-mid);
+    color:var(--gold);
+    font-family:'Rajdhani',sans-serif;
+    font-size:var(--fs-lg);
+    font-weight:700;
+    padding:8px 14px;
+    text-align:left;
+  }
+
+  /* BADGES */
+  .badge{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:20px;
+    font-size:var(--fs-sm);
+    font-weight:600;
+    line-height:1.4;
+    white-space:nowrap;
+  }
+  .badge-lain{background:#dcfce7;color:#15803d;}
+  .badge-pejabat{background:#fef9c3;color:#854d0e;}
+  .badge-rci{background:#fce7f3;color:#9d174d;}
+  .badge-apr{background:#dbeafe;color:#1e40af;}
+
+  /* TAB CONTENT */
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .loading{text-align:center;padding:32px;color:var(--muted);font-size:var(--fs-base);}
   .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
-  .empty-icon{font-size:40px;margin-bottom:12px;} .empty-text{font-size:14px;font-weight:500;}
-  footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px;}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+  .empty-text{font-size:var(--fs-md);font-weight:500;}
+
+  footer{
+    text-align:center;padding:20px;
+    font-size:var(--fs-sm);
+    color:var(--muted);
+    border-top:1px solid var(--border);
+    margin-top:8px;
+    line-height:1.8;
+  }
 
   /* =====================
      PNGS CARD
   ===================== */
-  .pngs-card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:18px;width:100%;min-width:360px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-  .pngs-header{background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));padding:14px 16px 10px;width:100%;box-sizing:border-box;}
-  .pngs-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;line-height:1.2;white-space:nowrap;overflow:visible;width:100%;}
-  .pngs-date{font-size:13px;color:rgba(255,255,255,0.7);margin-top:3px;white-space:nowrap;}
-  .pngs-table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed;}
-  /* Header row */
-  .pngs-table thead tr{border-bottom:2px solid #ddd;}
-  .pngs-table th{padding:10px 12px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
-  .pngs-table th.penugasan{background:#e8e8e8;color:#444;text-align:left;width:auto;}
-  .pngs-table th.peg{background:#f4a261;color:#fff;text-align:center;width:80px;min-width:80px;font-size:13px;}
-  .pngs-table th.apr{background:#4a90d9;color:#fff;text-align:center;width:80px;min-width:80px;font-size:13px;}
-  /* Data rows — clean white, subtle divider */
-  .pngs-table tbody tr{border-bottom:1px solid #e8e8c8;}
+  .pngs-card{
+    background:#fff;border-radius:12px;border:1px solid #e2e8f0;
+    overflow:hidden;margin-bottom:0;width:100%;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    align-self:start;
+  }
+  .pngs-header{
+    background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));
+    padding:14px 16px 10px;width:100%;box-sizing:border-box;
+  }
+  .pngs-title{
+    font-family:'Rajdhani',sans-serif;
+    font-size:18px;font-weight:700;
+    color:var(--gold);letter-spacing:.06em;text-transform:uppercase;
+    line-height:1.2;
+    /* Fixed: allow wrapping on small screens */
+    white-space:normal;
+    word-break:break-word;
+  }
+  .pngs-date{font-size:var(--fs-base);color:rgba(255,255,255,0.75);margin-top:4px;}
+
+  .pngs-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:var(--fs-base);
+    table-layout:fixed; /* fixed layout so column widths are respected */
+  }
+  /* Column widths: label takes all remaining space, PEG/APR fixed */
+  .pngs-table col.col-penugasan{width:auto;}
+  .pngs-table col.col-peg{width:70px;}
+  .pngs-table col.col-apr{width:70px;}
+
+  .pngs-table thead tr{border-bottom:2px solid #ccc;}
+  .pngs-table th{
+    padding:9px 8px;
+    font-size:var(--fs-sm);
+    font-weight:700;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .pngs-table th.penugasan{
+    background:#d0d0d0;
+    color:#333;
+    text-align:left;
+    padding:9px 8px 9px 12px;
+  }
+  .pngs-table th.peg{
+    background:#e07a35;
+    color:#fff;
+    text-align:center;
+    width:70px;
+  }
+  .pngs-table th.apr{
+    background:#2e78c7;
+    color:#fff;
+    text-align:center;
+    width:70px;
+  }
+
+  .pngs-table tbody tr{border-bottom:1px solid #e4e4c0;}
   .pngs-table tbody tr:last-child{border-bottom:none;}
-  .pngs-table td{padding:10px 12px;background:#fffde8;font-size:14px;font-family:'Inter',sans-serif;}
-  .pngs-table td.penugasan-cell{font-size:14px;font-family:'Inter',sans-serif;font-weight:600;color:#222;background:#fffde8;white-space:nowrap;}
-  .pngs-table td.peg-cell{font-size:14px;font-family:'Inter',sans-serif;text-align:center;font-weight:400;color:#333;background:#fffde8;width:80px;min-width:80px;max-width:80px;}
-  .pngs-table td.apr-cell{font-size:14px;font-family:'Inter',sans-serif;text-align:center;font-weight:400;color:#333;background:#fffde8;width:80px;min-width:80px;max-width:80px;}
+  .pngs-table tbody tr:nth-child(odd) td{background:#fffde8;}
+  .pngs-table tbody tr:nth-child(even) td{background:#fffbda;}
+
+  /* All td base */
+  .pngs-table td{
+    padding:7px 8px;
+    font-size:var(--fs-base);
+    font-family:'Inter',sans-serif;
+    vertical-align:middle;
+  }
+  /* Label column */
+  .pngs-table td.penugasan-cell{
+    font-weight:600;
+    color:#222;
+    text-align:left;
+    padding:7px 8px 7px 12px;
+    white-space:nowrap;
+    line-height:1.4;
+  }
+  /* Number columns — centred, fixed width */
+  .pngs-table td.peg-cell{
+    text-align:center;
+    font-weight:700;
+    color:#333;
+    width:70px;
+  }
+  .pngs-table td.apr-cell{
+    text-align:center;
+    font-weight:700;
+    color:#333;
+    width:70px;
+  }
+
   /* Total row */
-  .pngs-table tr.total-row td{background:#e8e8e8;font-weight:700;color:#222;padding:11px 12px;border-top:2px solid #ccc;}
-  .pngs-table tr.total-row td.penugasan-cell{font-size:14px;background:#e8e8e8;color:#222;white-space:nowrap;}
-  .pngs-table tr.total-row td.peg-cell{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;text-align:center;background:#f4a261;color:#fff;width:80px;min-width:80px;max-width:80px;}
-  .pngs-table tr.total-row td.apr-cell{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;text-align:center;background:#4a90d9;color:#fff;width:80px;min-width:80px;max-width:80px;}
+  .pngs-table tr.total-row td{
+    border-top:2px solid #aaa;
+    padding:10px 10px;
+    font-weight:700;
+  }
+  .pngs-table tr.total-row td.penugasan-cell{
+    background:#d0d0d0;
+    color:#111;
+    font-size:var(--fs-base);
+    text-align:left;
+    padding-left:14px;
+    white-space:nowrap;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .pngs-table tr.total-row td.peg-cell{
+    background:#e07a35;
+    color:#fff;
+    font-family:'Rajdhani',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-align:center;
+    width:70px;
+  }
+  .pngs-table tr.total-row td.apr-cell{
+    background:#2e78c7;
+    color:#fff;
+    font-family:'Rajdhani',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-align:center;
+    width:70px;
+  }
 
   /* =====================
      UNLOCK / PROTECTED
   ===================== */
   .unlock-container{background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:10px;padding:20px;margin:20px 0;text-align:center;color:white;}
   .unlock-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:15px;}
-  .unlock-input-group{display:flex;max-width:400px;margin:0 auto;gap:10px;}
-  .unlock-input{flex:1;padding:12px 15px;border:2px solid var(--gold);border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;}
+  .unlock-input-group{display:flex;max-width:440px;margin:0 auto;gap:10px;}
+  .unlock-input{flex:1;padding:11px 14px;border:2px solid var(--gold);border-radius:8px;font-size:var(--fs-base);font-family:'Inter',sans-serif;outline:none;}
   .unlock-input:focus{border-color:white;}
-  .unlock-btn{background:var(--gold);color:var(--navy-dark);border:none;border-radius:8px;padding:12px 25px;font-size:14px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .unlock-btn{background:var(--gold);color:var(--navy-dark);border:none;border-radius:8px;padding:11px 20px;font-size:var(--fs-base);font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
   .unlock-btn:hover{background:white;transform:translateY(-2px);}
-  .unlock-error{color:#ff9999;font-size:13px;margin-top:10px;display:none;}
+  .unlock-error{color:#ff9999;font-size:var(--fs-base);margin-top:10px;display:none;}
   .protected-content{display:none;}
   .protected-content.visible{display:block;}
 
-  @media(max-width:1200px){th,td{padding:8px 5px;font-size:12px;}th:nth-child(4),td:nth-child(4){min-width:120px;}}
-  @media(max-width:768px){main{padding:16px;}.grid-wide{grid-template-columns:1fr;}header,.tabs{padding-left:16px;padding-right:16px;}.login-box{margin:16px;padding:28px 24px;}.table-wrap{margin:0 -16px;border-radius:0;width:calc(100% + 32px);}}
+  /* Date picker area */
+  .date-picker-area{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 16px;}
+  .date-picker-label{font-size:var(--fs-sm);font-weight:600;color:var(--muted);white-space:nowrap;}
+  .date-picker-input{border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:var(--fs-sm);font-family:'Inter',sans-serif;color:var(--dark);outline:none;cursor:pointer;background:white;}
+  .date-picker-btn{background:var(--navy);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:var(--fs-sm);font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;}
+
+  /* =====================
+     RESPONSIVE
+  ===================== */
+  @media(max-width:1200px){
+    th,td{padding:8px 7px;}
+  }
+  @media(max-width:900px){
+    .grid-wide{grid-template-columns:1fr;}
+  }
+  @media(max-width:768px){
+    main{padding:16px;}
+    header,.tabs{padding-left:16px;padding-right:16px;}
+    .login-box{margin:16px;padding:28px 24px;}
+    .table-wrap{margin:0 -16px;border-radius:0;width:calc(100% + 32px);}
+    .header-right .date-day,.header-right .header-time{display:none;}
+    .pngs-title{font-size:16px;}
+  }
 </style>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- ==================== LOGIN PAGE ==================== -->
 <div id="loginPage">
   <div class="login-box">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="login-logo" alt="PDRM" onerror="this.style.display='none'">
+    <div class="login-logo-wrap">
+      <img
+        id="loginLogoImg"
+        src="https://images.seeklogo.com/logo-png/50/1/pdrm-logo-png_seeklogo-502684.png"
+        class="login-logo"
+        alt="PDRM Logo"
+        onerror="this.style.display='none';document.getElementById('loginLogoFallback').style.display='flex';"
+      >
+      <div class="login-logo-fallback" id="loginLogoFallback">PDRM</div>
+    </div>
     <div class="login-title">SSPDRM MELAKA</div>
     <div class="login-sub">Sistem Penugasan Anggota SSPDRM</div>
-    <div class="login-field"><label>Nama Pengguna</label><input type="text" id="loginUser" placeholder="Masukkan nama pengguna..."/></div>
-    <div class="login-field"><label>Token (Kata Laluan)</label><input type="password" id="loginToken" placeholder="Masukkan token anda..."/></div>
+    <div class="login-field">
+      <label>Nama Pengguna</label>
+      <input type="text" id="loginUser" placeholder="Masukkan nama pengguna..."/>
+    </div>
+    <div class="login-field">
+      <label>Token (Kata Laluan)</label>
+      <input type="password" id="loginToken" placeholder="Masukkan token anda..."/>
+    </div>
     <button class="btn-login" id="loginBtn" onclick="doLogin()">LOG MASUK</button>
     <div class="login-error" id="loginError">❌ Nama pengguna atau token tidak sah.</div>
-    <!-- FIX: warmup status shown to user so login doesn't feel frozen -->
     <div class="warmup-status connecting" id="warmupStatus">⏳ Menyambung ke pelayan...</div>
     <hr class="login-divider">
-    <div class="login-footer">Polis Diraja Malaysia · SSPDRM Melaka<br>Gunakan token yang diberikan oleh pentadbir.</div>
+    <div class="login-footer">
+      Polis Diraja Malaysia · SSPDRM Melaka<br>
+      Gunakan token yang diberikan oleh pentadbir.
+    </div>
   </div>
 </div>
 
-<!-- DASHBOARD PAGE -->
+<!-- ==================== DASHBOARD PAGE ==================== -->
 <div id="dashboardPage">
 <header>
   <div class="header-left">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Seal_of_the_Royal_Malaysia_Police.svg/240px-Seal_of_the_Royal_Malaysia_Police.svg.png" class="pdrm-logo" alt="PDRM" onerror="this.style.display='none'">
-    <div class="header-titles"><div class="header-title">SSPDRM MELAKA</div><div class="header-sub">Sistem Penugasan Anggota SSPDRM · Dashboard</div></div>
+    <div class="pdrm-logo-wrap">
+      <img
+        id="headerLogoImg"
+        src="https://images.seeklogo.com/logo-png/50/1/pdrm-logo-png_seeklogo-502684.png"
+        class="pdrm-logo"
+        alt="PDRM"
+        onerror="this.style.display='none';document.getElementById('headerLogoFallback').style.display='flex';"
+      >
+      <div class="pdrm-logo-fallback" id="headerLogoFallback">PDRM</div>
+    </div>
+    <div class="header-titles">
+      <div class="header-title">SSPDRM MELAKA</div>
+      <div class="header-sub">Sistem Penugasan Anggota SSPDRM · Dashboard</div>
+    </div>
   </div>
   <div class="header-right">
-    <div style="text-align:right;"><div class="date-day" id="headerDate">—</div><div style="font-size:11px;color:rgba(255,255,255,0.6);" id="headerTime">—</div></div>
-    <div class="live-badge"><div class="live-dot"></div><div class="live-text" id="liveText">Live</div></div>
+    <div style="text-align:right;">
+      <div class="date-day" id="headerDate">—</div>
+      <div class="header-time" id="headerTime">—</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      <div class="live-text" id="liveText">Live</div>
+    </div>
     <div class="user-pill"><span>👤</span><span id="userPillName">—</span></div>
     <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
   </div>
@@ -235,10 +508,10 @@
   <div class="tab d3"     id="tab_btn_d3"   onclick="switchTab('d3')">🟡 Alor Gajah</div>
   <div class="tab d4"     id="tab_btn_d4"   onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
   <div class="tab hidden" id="tab_btn_log"  onclick="switchTab('log')">📋 Log Masuk</div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 16px;">
-    <label style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;">📆 Pilih Tarikh:</label>
-    <input type="date" id="todayDatePicker" style="border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;cursor:pointer;background:white;" onchange="onDatePickerChange()"/>
-    <button onclick="onDatePickerChange()" style="background:var(--navy);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;">Semak</button>
+  <div class="date-picker-area">
+    <label class="date-picker-label">📆 Pilih Tarikh:</label>
+    <input type="date" id="todayDatePicker" class="date-picker-input" onchange="onDatePickerChange()"/>
+    <button class="date-picker-btn" onclick="onDatePickerChange()">Semak</button>
   </div>
 </div>
 
@@ -246,9 +519,22 @@
   <div class="alert alert-error" id="alertError"></div>
   <div class="alert alert-info"  id="alertInfo"></div>
 
-  <!-- SEMUA DAERAH TAB -->
+  <!-- ── SEMUA DAERAH TAB ── -->
   <div class="tab-content active" id="tab-today">
-    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📅</div><div><div class="date-banner-title" id="today_title">—</div><div class="date-banner-sub">Semua daerah · Tarikh penugasan dipilih</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="today_count">—</div><div class="date-banner-label">Jumlah anggota bertugas</div></div></div>
+    <div class="date-banner navy">
+      <div class="date-banner-left">
+        <div class="date-icon">📅</div>
+        <div>
+          <div class="date-banner-title" id="today_title">—</div>
+          <div class="date-banner-sub">Semua daerah · Tarikh penugasan dipilih</div>
+        </div>
+      </div>
+      <div class="date-banner-count">
+        <div class="date-banner-num" id="today_count">—</div>
+        <div class="date-banner-label">Jumlah anggota bertugas</div>
+      </div>
+    </div>
+
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="today_k1">—</div><div class="kpi-sub">Semua daerah</div><div class="kpi-bar navy"></div></div>
       <div class="kpi"><div class="kpi-icon">🏢</div><div class="kpi-label">Daerah Aktif</div><div class="kpi-value" id="today_k2">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar gold"></div></div>
@@ -256,29 +542,59 @@
       <div class="kpi"><div class="kpi-icon">🏫</div><div class="kpi-label">Balai Terlibat</div><div class="kpi-value" id="today_k4">—</div><div class="kpi-sub">Balai polis</div><div class="kpi-bar amber"></div></div>
       <div class="kpi"><div class="kpi-icon">📋</div><div class="kpi-label">Jenis Tugas</div><div class="kpi-value" id="today_k5">—</div><div class="kpi-sub">Kategori</div><div class="kpi-bar red"></div></div>
     </div>
+
     <div class="grid-wide">
-      <div class="card"><div class="card-header"><div class="card-title">Anggota Mengikut Daerah</div><div class="card-badge" id="today_b1">—</div></div><canvas id="today_c1"></canvas></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Anggota Mengikut Daerah</div>
+          <div class="card-badge" id="today_b1">—</div>
+        </div>
+        <canvas id="today_c1"></canvas>
+      </div>
       <div id="today_pngs_card" class="pngs-card"></div>
     </div>
-    <!-- 4 district charts by Balai Bertugas -->
+
+    <!-- 4 district charts -->
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:18px;">
       <div class="card"><div class="card-header"><div class="card-title" style="color:#b91c1c;">🔴 Melaka Tengah — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d1_badge">—</div></div><canvas id="today_c_d1"></canvas></div>
       <div class="card"><div class="card-header"><div class="card-title" style="color:#15803d;">🟢 Jasin — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d2_badge">—</div></div><canvas id="today_c_d2"></canvas></div>
       <div class="card"><div class="card-header"><div class="card-title" style="color:#b45309;">🟡 Alor Gajah — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d3_badge">—</div></div><canvas id="today_c_d3"></canvas></div>
       <div class="card"><div class="card-header"><div class="card-title" style="color:#7c3aed;">🟣 IPK SSPDRM — Mengikut Balai Bertugas</div><div class="card-badge" id="today_d4_badge">—</div></div><canvas id="today_c_d4"></canvas></div>
     </div>
+
     <div class="table-wrap">
-      <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota Bertugas Hari Ini</div><div class="card-badge" id="today_tb">—</div></div>
+      <div class="card-header" style="padding:16px 20px 0;">
+        <div class="card-title">Senarai Anggota Bertugas Hari Ini</div>
+        <div class="card-badge" id="today_tb">—</div>
+      </div>
       <div style="overflow-x:auto;margin-top:12px;">
-        <table><thead><tr><th>#</th><th>Timestamp</th><th>Daerah</th><th>Nama & No. Badan</th><th>Balai Pendaftaran</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th>Jam</th><th>Masa Mula</th></tr></thead>
-        <tbody id="today_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody></table>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Timestamp</th>
+              <th>Daerah</th>
+              <th>Nama &amp; No. Badan</th>
+              <th>Balai Pendaftaran</th>
+              <th>Balai Bertugas</th>
+              <th>Jenis Tugasan</th>
+              <th>Lain-lain Tugas</th>
+              <th style="text-align:center;">Jam</th>
+              <th style="text-align:center;">Masa Mula</th>
+            </tr>
+          </thead>
+          <tbody id="today_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody>
+        </table>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-today -->
 
-  <!-- MELAKA TENGAH TAB -->
+  <!-- ── MELAKA TENGAH TAB ── -->
   <div class="tab-content" id="tab-d1">
-    <div class="date-banner red"><div class="date-banner-left"><div class="date-icon">🔴</div><div><div class="date-banner-title">Melaka Tengah</div><div class="date-banner-sub" id="d1_sub">—</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="d1_count">—</div><div class="date-banner-label">Anggota bertugas</div></div></div>
+    <div class="date-banner red">
+      <div class="date-banner-left"><div class="date-icon">🔴</div><div><div class="date-banner-title">Melaka Tengah</div><div class="date-banner-sub" id="d1_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d1_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d1_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar red"></div></div>
       <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d1_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
@@ -291,20 +607,31 @@
     </div>
     <div class="unlock-container" id="unlockSectionD1">
       <div class="unlock-title">🔒 DATA SENSITIF - SENARAI ANGGOTA MELAKA TENGAH</div>
-      <div class="unlock-input-group"><input type="password" class="unlock-input" id="anggotaPasswordD1" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d1')"><button class="unlock-btn" onclick="unlockAnggota('d1')">BUKA KUNCI</button></div>
+      <div class="unlock-input-group">
+        <input type="password" class="unlock-input" id="anggotaPasswordD1" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d1')">
+        <button class="unlock-btn" onclick="unlockAnggota('d1')">BUKA KUNCI</button>
+      </div>
       <div class="unlock-error" id="unlockErrorD1">❌ Kata laluan salah</div>
     </div>
     <div class="protected-content" id="protectedAnggotaD1">
       <div class="table-wrap">
         <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Melaka Tengah</div><div class="card-badge" id="d1_tb">—</div></div>
-        <div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead><tbody id="d1_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;margin-top:12px;">
+          <table>
+            <thead><tr><th>#</th><th>Pangkat</th><th>Nama &amp; No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th style="text-align:center;">Jam</th><th style="text-align:center;">Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+            <tbody id="d1_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-d1 -->
 
-  <!-- JASIN TAB -->
+  <!-- ── JASIN TAB ── -->
   <div class="tab-content" id="tab-d2">
-    <div class="date-banner green"><div class="date-banner-left"><div class="date-icon">🟢</div><div><div class="date-banner-title">Jasin</div><div class="date-banner-sub" id="d2_sub">—</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="d2_count">—</div><div class="date-banner-label">Anggota bertugas</div></div></div>
+    <div class="date-banner green">
+      <div class="date-banner-left"><div class="date-icon">🟢</div><div><div class="date-banner-title">Jasin</div><div class="date-banner-sub" id="d2_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d2_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d2_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar green"></div></div>
       <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d2_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
@@ -317,20 +644,31 @@
     </div>
     <div class="unlock-container" id="unlockSectionD2">
       <div class="unlock-title">🔒 DATA SENSITIF - SENARAI ANGGOTA JASIN</div>
-      <div class="unlock-input-group"><input type="password" class="unlock-input" id="anggotaPasswordD2" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d2')"><button class="unlock-btn" onclick="unlockAnggota('d2')">BUKA KUNCI</button></div>
+      <div class="unlock-input-group">
+        <input type="password" class="unlock-input" id="anggotaPasswordD2" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d2')">
+        <button class="unlock-btn" onclick="unlockAnggota('d2')">BUKA KUNCI</button>
+      </div>
       <div class="unlock-error" id="unlockErrorD2">❌ Kata laluan salah</div>
     </div>
     <div class="protected-content" id="protectedAnggotaD2">
       <div class="table-wrap">
         <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Jasin</div><div class="card-badge" id="d2_tb">—</div></div>
-        <div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead><tbody id="d2_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;margin-top:12px;">
+          <table>
+            <thead><tr><th>#</th><th>Pangkat</th><th>Nama &amp; No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th style="text-align:center;">Jam</th><th style="text-align:center;">Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+            <tbody id="d2_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-d2 -->
 
-  <!-- ALOR GAJAH TAB -->
+  <!-- ── ALOR GAJAH TAB ── -->
   <div class="tab-content" id="tab-d3">
-    <div class="date-banner amber"><div class="date-banner-left"><div class="date-icon">🟡</div><div><div class="date-banner-title">Alor Gajah</div><div class="date-banner-sub" id="d3_sub">—</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="d3_count">—</div><div class="date-banner-label">Anggota bertugas</div></div></div>
+    <div class="date-banner amber">
+      <div class="date-banner-left"><div class="date-icon">🟡</div><div><div class="date-banner-title">Alor Gajah</div><div class="date-banner-sub" id="d3_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d3_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d3_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar amber"></div></div>
       <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d3_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
@@ -343,20 +681,31 @@
     </div>
     <div class="unlock-container" id="unlockSectionD3">
       <div class="unlock-title">🔒 DATA SENSITIF - SENARAI ANGGOTA ALOR GAJAH</div>
-      <div class="unlock-input-group"><input type="password" class="unlock-input" id="anggotaPasswordD3" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d3')"><button class="unlock-btn" onclick="unlockAnggota('d3')">BUKA KUNCI</button></div>
+      <div class="unlock-input-group">
+        <input type="password" class="unlock-input" id="anggotaPasswordD3" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d3')">
+        <button class="unlock-btn" onclick="unlockAnggota('d3')">BUKA KUNCI</button>
+      </div>
       <div class="unlock-error" id="unlockErrorD3">❌ Kata laluan salah</div>
     </div>
     <div class="protected-content" id="protectedAnggotaD3">
       <div class="table-wrap">
         <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — Alor Gajah</div><div class="card-badge" id="d3_tb">—</div></div>
-        <div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead><tbody id="d3_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;margin-top:12px;">
+          <table>
+            <thead><tr><th>#</th><th>Pangkat</th><th>Nama &amp; No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th style="text-align:center;">Jam</th><th style="text-align:center;">Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+            <tbody id="d3_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-d3 -->
 
-  <!-- IPK SSPDRM TAB -->
+  <!-- ── IPK SSPDRM TAB ── -->
   <div class="tab-content" id="tab-d4">
-    <div class="date-banner purple"><div class="date-banner-left"><div class="date-icon">🟣</div><div><div class="date-banner-title">IPK SSPDRM</div><div class="date-banner-sub" id="d4_sub">—</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="d4_count">—</div><div class="date-banner-label">Anggota bertugas</div></div></div>
+    <div class="date-banner purple">
+      <div class="date-banner-left"><div class="date-icon">🟣</div><div><div class="date-banner-title">IPK SSPDRM</div><div class="date-banner-sub" id="d4_sub">—</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="d4_count">—</div><div class="date-banner-label">Anggota bertugas</div></div>
+    </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👮</div><div class="kpi-label">Jumlah Anggota</div><div class="kpi-value" id="d4_k1">—</div><div class="kpi-sub">Hari ini</div><div class="kpi-bar navy"></div></div>
       <div class="kpi"><div class="kpi-icon">⏱️</div><div class="kpi-label">Jumlah Jam</div><div class="kpi-value" id="d4_k2">—</div><div class="kpi-sub">Jam penugasan</div><div class="kpi-bar gold"></div></div>
@@ -369,20 +718,31 @@
     </div>
     <div class="unlock-container" id="unlockSectionD4">
       <div class="unlock-title">🔒 DATA SENSITIF - SENARAI ANGGOTA IPK SSPDRM</div>
-      <div class="unlock-input-group"><input type="password" class="unlock-input" id="anggotaPasswordD4" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d4')"><button class="unlock-btn" onclick="unlockAnggota('d4')">BUKA KUNCI</button></div>
+      <div class="unlock-input-group">
+        <input type="password" class="unlock-input" id="anggotaPasswordD4" placeholder="Masukkan kata laluan untuk lihat data anggota..." onkeypress="if(event.key==='Enter') unlockAnggota('d4')">
+        <button class="unlock-btn" onclick="unlockAnggota('d4')">BUKA KUNCI</button>
+      </div>
       <div class="unlock-error" id="unlockErrorD4">❌ Kata laluan salah</div>
     </div>
     <div class="protected-content" id="protectedAnggotaD4">
       <div class="table-wrap">
         <div class="card-header" style="padding:16px 20px 0;"><div class="card-title">Senarai Anggota — IPK SSPDRM</div><div class="card-badge" id="d4_tb">—</div></div>
-        <div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>#</th><th>Pangkat</th><th>Nama & No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th>Jam</th><th>Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead><tbody id="d4_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody></table></div>
+        <div style="overflow-x:auto;margin-top:12px;">
+          <table>
+            <thead><tr><th>#</th><th>Pangkat</th><th>Nama &amp; No. Badan</th><th>Balai Bertugas</th><th>Jenis Tugasan</th><th>Lain-lain Tugas</th><th style="text-align:center;">Jam</th><th style="text-align:center;">Masa Mula</th><th>Jantina</th><th>Pejawatan</th></tr></thead>
+            <tbody id="d4_table"><tr><td colspan="10" class="loading">Memuatkan data...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-d4 -->
 
-  <!-- LOG TAB -->
+  <!-- ── LOG TAB ── -->
   <div class="tab-content" id="tab-log">
-    <div class="date-banner navy"><div class="date-banner-left"><div class="date-icon">📋</div><div><div class="date-banner-title">Log Masuk Pengguna</div><div class="date-banner-sub">Rekod semua aktiviti log masuk dan log keluar</div></div></div><div class="date-banner-count"><div class="date-banner-num" id="log_count">—</div><div class="date-banner-label">Jumlah sesi</div></div></div>
+    <div class="date-banner navy">
+      <div class="date-banner-left"><div class="date-icon">📋</div><div><div class="date-banner-title">Log Masuk Pengguna</div><div class="date-banner-sub">Rekod semua aktiviti log masuk dan log keluar</div></div></div>
+      <div class="date-banner-count"><div class="date-banner-num" id="log_count">—</div><div class="date-banner-label">Jumlah sesi</div></div>
+    </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-icon">👤</div><div class="kpi-label">Jumlah Sesi</div><div class="kpi-value" id="log_k1">—</div><div class="kpi-sub">Semua masa</div><div class="kpi-bar navy"></div></div>
       <div class="kpi"><div class="kpi-icon">📅</div><div class="kpi-label">Sesi Hari Ini</div><div class="kpi-value" id="log_k2">—</div><div class="kpi-sub">Login hari ini</div><div class="kpi-bar gold"></div></div>
@@ -390,31 +750,29 @@
       <div class="kpi"><div class="kpi-icon">🔑</div><div class="kpi-label">Admin Login</div><div class="kpi-value" id="log_k4">—</div><div class="kpi-sub">Sesi admin</div><div class="kpi-bar red"></div></div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">Rekod Log Masuk</div>
-        <!-- FIX #11: clearLog removed — not implemented, button removed to avoid confusing users -->
+      <div class="card-header"><div class="card-title">Rekod Log Masuk</div></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Nama Pengguna</th><th>Peranan</th><th>Tab Diakses</th><th>Tarikh Login</th><th>Masa Login</th><th>Masa Logout</th></tr></thead>
+          <tbody id="log_table"><tr><td colspan="7" class="loading">Tiada rekod log</td></tr></tbody>
+        </table>
       </div>
-      <div style="overflow-x:auto;"><table><thead><tr><th>#</th><th>Nama Pengguna</th><th>Peranan</th><th>Tab Diakses</th><th>Tarikh Login</th><th>Masa Login</th><th>Masa Logout</th></tr></thead><tbody id="log_table"><tr><td colspan="7" class="loading">Tiada rekod log</td></tr></tbody></table></div>
     </div>
-  </div>
+  </div><!-- /tab-log -->
+
 </main>
 
-<!-- FIX #8: nextRefresh element added to footer -->
 <footer>
   Polis Diraja Malaysia &nbsp;·&nbsp; SSPDRM Melaka &nbsp;·&nbsp; Sistem Penugasan Anggota SSPDRM
   &nbsp;·&nbsp; <span id="footerRefresh">—</span>
   &nbsp;·&nbsp; <span id="nextRefresh" style="color:var(--muted);"></span>
 </footer>
-</div><!-- end dashboardPage -->
+</div><!-- /dashboardPage -->
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyICf49UavmO6vYlMLp5yBrnVKHcyS6AMtGgKw39j6BKZcaBg4Lp_VgauS_WYcaBwu_/exec';
-// District unlock passwords — loaded from Google Sheet "users" after login
-// Structure: { d1: 'pw_melaka_tengah', d2: 'pw_jasin', d3: 'pw_alor_gajah', d4: 'pw_ipk' }
 let DISTRICT_PASSWORDS = {};
 
-// FIX #1 & #2 — store warmup as a Promise so login can await it
-// This starts warming the server the instant the page loads
 const warmupPromise = fetch(APPS_SCRIPT_URL + '?action=warmup&t=' + Date.now())
   .then(() => {
     const el = document.getElementById('warmupStatus');
@@ -427,8 +785,6 @@ const warmupPromise = fetch(APPS_SCRIPT_URL + '?action=warmup&t=' + Date.now())
 
 const TAB_LABELS = { today:'📅 Hari Ini (Semua)', d1:'🔴 Melaka Tengah', d2:'🟢 Jasin', d3:'🟡 Alor Gajah', d4:'🟣 IPK SSPDRM' };
 const DAERAH_MAP = { d1:'MELAKA TENGAH', d2:'JASIN', d3:'ALOR GAJAH', d4:'IPK SSPDRM' };
-
-// FIX #15 — modulo applied in makeChart so colours wrap safely past 10 balai
 const COLORS = ['#003087','#0a3fa8','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#dc2626','#16a34a','#d97706','#7c3aed'];
 
 let allData = [];
@@ -449,7 +805,6 @@ function normaliseDate(str){
   if(!str) return '';
   str = str.trim();
   if(str.includes('T')){
-    // FIX #10 — use Intl instead of hardcoded +8h offset
     const d = new Date(str);
     if(isNaN(d.getTime())) return str;
     const parts = new Intl.DateTimeFormat('en-MY',{timeZone:'Asia/Kuala_Lumpur',day:'numeric',month:'numeric',year:'numeric'}).formatToParts(d);
@@ -463,18 +818,15 @@ function normaliseDate(str){
 
 function normDaerah(s){ return String(s||'').toUpperCase().replace(/\s+/g,' ').trim(); }
 
-// FIX #12 — safe timestamp formatter that doesn't pass raw sheet strings into new Date()
 function formatTimestamp(raw){
   if(!raw||raw==='') return '—';
   const s = String(raw).trim();
-  // ISO string path — safe to parse
   if(s.includes('T')){
     const d = new Date(s);
     if(!isNaN(d.getTime())){
       return new Intl.DateTimeFormat('ms-MY',{timeZone:'Asia/Kuala_Lumpur',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);
     }
   }
-  // Sheet already formatted — return as-is
   return s;
 }
 
@@ -518,18 +870,17 @@ function expandRows(rows){
   return out;
 }
 
-// FIX #14 — normalizeJenis uses explicit keyword sets, not order-dependent if-chain
 function normalizeJenis(j){
   if(!j) return 'LAIN-LAIN TUGAS';
   const u = j.toUpperCase().trim();
   const checks = [
-    { keys:['SJR'],                         val:'SJR' },
-    { keys:['MPV'],                         val:'MPV' },
+    { keys:['SJR'],                             val:'SJR' },
+    { keys:['MPV'],                             val:'MPV' },
     { keys:['PERTANYAAN','PEJABAT PERTANYAAN'], val:'PEJABAT PERTANYAAN' },
-    { keys:['DCC'],                         val:'DCC' },
-    { keys:['SENTRI','PROWLER'],            val:'SENTRI / PROWLER' },
-    { keys:['BIT','RONDAAN'],               val:'BIT/RONDAAN' },
-    { keys:['PENTADBIRAN','ADMIN'],         val:'TUGAS PENTADBIRAN' },
+    { keys:['DCC'],                             val:'DCC' },
+    { keys:['SENTRI','PROWLER'],                val:'SENTRI / PROWLER' },
+    { keys:['BIT','RONDAAN'],                   val:'BIT/RONDAAN' },
+    { keys:['PENTADBIRAN','ADMIN'],             val:'TUGAS PENTADBIRAN' },
   ];
   for(const c of checks){ if(c.keys.some(k=>u.includes(k))) return c.val; }
   return 'LAIN-LAIN TUGAS';
@@ -539,12 +890,11 @@ function badgeClass(j){ if(!j)return''; const u=j.toUpperCase(); if(u.includes('
 function isPeg(d){ const p=String(d.pejawatan||'').toUpperCase().trim(); const pangkat=String(d.pangkat||'').toUpperCase().trim(); if(p.includes('PEG')||p.includes('PEGAWAI')) return true; if(pangkat.includes('INSP')||pangkat.includes('DSP')||pangkat.includes('ASP')||pangkat.includes('SUPT')||pangkat.includes('DCP')||pangkat.includes('CP')||pangkat.includes('KPP')||pangkat.includes('KDSP')||pangkat.includes('ACP')) return true; return false; }
 function countBy(data,key){ const m={}; data.forEach(d=>{ const v=d[key]||'Lain'; m[v]=(m[v]||0)+1; }); return m; }
 
-// FIX #15 — colours wrap with modulo
 function makeChart(id,type,labels,values,colors){
   if(charts[id]) charts[id].destroy();
   const el=document.getElementById(id); if(!el) return;
   const assignedColors = values.map((_,i) => colors[i % colors.length]);
-  charts[id]=new Chart(el.getContext('2d'),{type,data:{labels,datasets:[{data:values,backgroundColor:assignedColors,borderColor:assignedColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:type==='doughnut',position:'right',labels:{font:{family:'Inter',size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}},scales:type!=='doughnut'?{x:{grid:{display:false},ticks:{font:{family:'Inter',size:10},maxRotation:40}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Inter',size:10}}}}:{}}});
+  charts[id]=new Chart(el.getContext('2d'),{type,data:{labels,datasets:[{data:values,backgroundColor:assignedColors,borderColor:assignedColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:type==='doughnut',position:'right',labels:{font:{family:'Inter',size:11},padding:10,usePointStyle:true}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}},scales:type!=='doughnut'?{x:{grid:{display:false},ticks:{font:{family:'Inter',size:11},maxRotation:40}},y:{grid:{color:'#f1f5f9'},ticks:{font:{family:'Inter',size:11}}}}:{}}});
 }
 
 function showAlert(type,msg){ const el=document.getElementById(type==='error'?'alertError':'alertInfo'); if(el){el.textContent=msg;el.style.display=msg?'block':'none';} }
@@ -552,15 +902,15 @@ function showAlert(type,msg){ const el=document.getElementById(type==='error'?'a
 // ── Unlock ───────────────────────────────────────────────────────
 
 function unlockAnggota(tabId){
-  const passwordInput=document.getElementById(`anggotaPassword${tabId.toUpperCase()}`);
-  const unlockError=document.getElementById(`unlockError${tabId.toUpperCase()}`);
-  const protectedContent=document.getElementById(`protectedAnggota${tabId.toUpperCase()}`);
-  const unlockSection=document.getElementById(`unlockSection${tabId.toUpperCase()}`);
+  const tid = tabId.toUpperCase();
+  const passwordInput = document.getElementById(`anggotaPassword${tid}`);
+  const unlockError   = document.getElementById(`unlockError${tid}`);
+  const protectedContent = document.getElementById(`protectedAnggota${tid}`);
+  const unlockSection    = document.getElementById(`unlockSection${tid}`);
 
-  // Use per-district password loaded from Google Sheet after login
   const correctPw = DISTRICT_PASSWORDS[tabId];
   if(!correctPw){
-    unlockError.textContent = '\u274C Kata laluan daerah belum dimuatkan. Cuba log masuk semula.';
+    unlockError.textContent = '❌ Kata laluan daerah belum dimuatkan. Cuba log masuk semula.';
     unlockError.style.display='block';
     passwordInput.value='';
     return;
@@ -576,7 +926,7 @@ function unlockAnggota(tabId){
       renderDistrictTab(tabId,districtData,getSelectedDateFull());
     }
   } else {
-    unlockError.textContent='\u274C Kata laluan salah';
+    unlockError.textContent='❌ Kata laluan salah';
     unlockError.style.display='block';
     passwordInput.value='';
   }
@@ -584,7 +934,6 @@ function unlockAnggota(tabId){
 
 // ── Auth ─────────────────────────────────────────────────────────
 
-// FIX: Enter key on login fields
 document.addEventListener('DOMContentLoaded',function(){
   const loginUser=document.getElementById('loginUser');
   const loginToken=document.getElementById('loginToken');
@@ -592,7 +941,6 @@ document.addEventListener('DOMContentLoaded',function(){
   loginUser.addEventListener('keypress',handleEnter);
   loginToken.addEventListener('keypress',handleEnter);
 
-  // FIX #2 — fire extra warmup ping on first focus (user about to type = extra lead time)
   let warmedOnFocus = false;
   loginUser.addEventListener('focus',()=>{
     if(!warmedOnFocus){
@@ -609,12 +957,10 @@ async function doLogin(){
   const loginBtn=document.getElementById('loginBtn');
 
   loginBtn.disabled=true;
-  // FIX #9 — proper CSS spinner element, not a rotating emoji
   loginBtn.innerHTML='<span class="spinner"></span> Menyambung ke pelayan...';
   errEl.style.display='none';
 
   try {
-    // FIX #1 — await warmup before sending login so server is already warm
     loginBtn.innerHTML='<span class="spinner"></span> Menunggu pelayan...';
     await warmupPromise;
     loginBtn.innerHTML='<span class="spinner"></span> Mengesahkan...';
@@ -636,7 +982,6 @@ async function doLogin(){
     sessionStorage.setItem('dashUser',JSON.stringify(currentUser));
     sessionStorage.setItem('dashToken',token);
     await saveLog('login');
-    // Load per-district unlock passwords from sheet before showing dashboard
     await fetchDistrictPasswords();
     showDashboard();
   } catch(e){
@@ -648,9 +993,6 @@ async function doLogin(){
   }
 }
 
-// Fetch per-district unlock passwords from the "users" sheet via Apps Script.
-// Returns an object like: { d1:'pw1', d2:'pw2', d3:'pw3', d4:'pw4' }
-// The Apps Script reads a "district_passwords" column (or dedicated row) from the users sheet.
 async function fetchDistrictPasswords(){
   try {
     const url=`${APPS_SCRIPT_URL}?action=getDistrictPasswords&username=${encodeURIComponent(currentUser.username)}&token=${encodeURIComponent(currentToken)}`;
@@ -658,12 +1000,10 @@ async function fetchDistrictPasswords(){
     const data = await response.json();
     if(data.passwords){
       DISTRICT_PASSWORDS = data.passwords;
-      // Also cache in sessionStorage so page refresh doesn't lose them
       sessionStorage.setItem('districtPasswords', JSON.stringify(DISTRICT_PASSWORDS));
     }
   } catch(e){
     console.warn('Could not load district passwords:', e);
-    // Fall back to any cached copy
     const cached = sessionStorage.getItem('districtPasswords');
     if(cached) DISTRICT_PASSWORDS = JSON.parse(cached);
   }
@@ -672,7 +1012,6 @@ async function fetchDistrictPasswords(){
 async function saveLog(action){
   if(!currentUser||!currentToken) return;
   const now=new Date();
-  // Format date/time explicitly so all browsers produce the same output
   const _pad = n => String(n).padStart(2,'0');
   const _dateStr = _pad(now.getDate())+'/'+_pad(now.getMonth()+1)+'/'+now.getFullYear();
   const _timeStr = _pad(now.getHours())+':'+_pad(now.getMinutes())+':'+_pad(now.getSeconds());
@@ -757,16 +1096,23 @@ async function renderLogTab(){
     document.getElementById('log_k3').textContent=new Set(logs.map(l=>l.username)).size;
     document.getElementById('log_k4').textContent=logs.filter(l=>l.role==='admin').length;
     const tbody=document.getElementById('log_table');
-    if(!logs.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">Tiada rekod log</td></tr>'; return; }
+    if(!logs.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">Tiada rekod log</td></tr>'; return; }
     const _extractTime = t => {
       if(!t||t==='—') return '—';
-      // Already HH:MM or HH:MM:SS
       const m = String(t).match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
       return m ? m[1] : t;
     };
-    tbody.innerHTML=logs.map((l,i)=>`<tr><td style="color:var(--muted);font-size:11px;">${i+1}</td><td><strong>${l.username}</strong></td><td><span class="badge ${l.role==='admin'?'badge-rci':'badge-apr'}">${l.role==='admin'?'Admin':'Daerah'}</span></td><td style="font-size:12px;">${l.tab}</td><td style="font-size:12px;">${l.loginDate}</td><td><strong>${_extractTime(l.loginTime)}</strong></td><td style="font-size:12px;">${_extractTime(l.logoutTime||'—')}</td></tr>`).join('');
+    tbody.innerHTML=logs.map((l,i)=>`<tr>
+      <td style="color:var(--muted);">${i+1}</td>
+      <td><strong>${l.username}</strong></td>
+      <td><span class="badge ${l.role==='admin'?'badge-rci':'badge-apr'}">${l.role==='admin'?'Admin':'Daerah'}</span></td>
+      <td>${l.tab}</td>
+      <td>${l.loginDate}</td>
+      <td><strong>${_extractTime(l.loginTime)}</strong></td>
+      <td>${_extractTime(l.logoutTime||'—')}</td>
+    </tr>`).join('');
   } catch(e){
-    document.getElementById('log_table').innerHTML='<tr><td colspan="8" class="loading">Gagal memuat log</td></tr>';
+    document.getElementById('log_table').innerHTML='<tr><td colspan="7" class="loading">Gagal memuat log</td></tr>';
   }
 }
 
@@ -837,24 +1183,24 @@ function renderSemuaDaerahTab(data,dateStr){
   makeChart('today_c1','bar',Object.keys(byDaerah),Object.values(byDaerah),COLORS);
   renderPenugasanCard('today_pngs_card',data,dateStr,true);
 
-  // Render 4 per-district charts by Balai Bertugas
   const DISTRICT_CHART_MAP = [
-    { key:'d1', daerah:'MELAKA TENGAH', chartId:'today_c_d1', badgeId:'today_d1_badge' },
-    { key:'d2', daerah:'JASIN',         chartId:'today_c_d2', badgeId:'today_d2_badge' },
-    { key:'d3', daerah:'ALOR GAJAH',    chartId:'today_c_d3', badgeId:'today_d3_badge' },
-    { key:'d4', daerah:'IPK SSPDRM',    chartId:'today_c_d4', badgeId:'today_d4_badge' },
+    { daerah:'MELAKA TENGAH', chartId:'today_c_d1', badgeId:'today_d1_badge' },
+    { daerah:'JASIN',         chartId:'today_c_d2', badgeId:'today_d2_badge' },
+    { daerah:'ALOR GAJAH',    chartId:'today_c_d3', badgeId:'today_d3_badge' },
+    { daerah:'IPK SSPDRM',    chartId:'today_c_d4', badgeId:'today_d4_badge' },
   ];
-  DISTRICT_CHART_MAP.forEach(({daerah, chartId, badgeId}) => {
+  DISTRICT_CHART_MAP.forEach(({daerah,chartId,badgeId}) => {
     const distData = data.filter(d => normDaerah(d.daerah) === daerah);
-    const byB = countBy(distData, 'bertugas');
+    const byB = countBy(distData,'bertugas');
     const badge = document.getElementById(badgeId);
     if(badge) badge.textContent = distData.length + ' anggota';
-    makeChart(chartId, 'bar',
-      Object.keys(byB).map(l => l.replace('BALAI POLIS ','')),
+    makeChart(chartId,'bar',
+      Object.keys(byB).map(l=>l.replace('BALAI POLIS ','')),
       Object.values(byB),
       COLORS
     );
   });
+
   const tbody=document.getElementById('today_table');
   if(!data.length){
     tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tiada rekod penugasan untuk tarikh ini</div></div></td></tr>';
@@ -867,18 +1213,17 @@ function renderSemuaDaerahTab(data,dateStr){
   Object.keys(groupedByDistrict).sort().forEach(district=>{
     html+=`<tr class="district-header"><td colspan="10"><strong>📍 ${district}</strong> (${groupedByDistrict[district].length} anggota)</td></tr>`;
     groupedByDistrict[district].forEach(r=>{
-      // FIX #12 — use safe formatTimestamp() instead of new Date(r.timestamp)
       html+=`<tr>
-        <td style="color:var(--muted);font-size:11px;text-align:center;">${globalCounter++}</td>
+        <td>${globalCounter++}</td>
         <td style="font-size:11px;">${formatTimestamp(r.timestamp)}</td>
         <td><strong style="color:var(--navy)">${r.daerah}</strong></td>
         <td><strong>${r.nama}</strong></td>
-        <td style="font-size:12px;">${r.balai.replace('BALAI POLIS ','')}</td>
-        <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ','')}</td>
+        <td>${r.balai.replace('BALAI POLIS ','')}</td>
+        <td>${r.bertugas.replace('BALAI POLIS ','')}</td>
         <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis||'—'}</span></td>
-        <td style="font-size:12px;max-width:200px;">${r.lain||'—'}</td>
-        <td><strong>${r.jam||'—'}</strong></td>
-        <td>${r.masa||'—'}</td>
+        <td style="max-width:200px;word-break:break-word;">${r.lain||'—'}</td>
+        <td style="text-align:center;font-weight:600;">${r.jam||'—'}</td>
+        <td style="text-align:center;">${r.masa||'—'}</td>
       </tr>`;
     });
   });
@@ -908,14 +1253,14 @@ function renderDistrictTab(key,data,dateStr){
       return;
     }
     tbody.innerHTML=data.map((r,i)=>`<tr>
-      <td style="color:var(--muted);font-size:11px;text-align:center;">${i+1}</td>
-      <td style="font-size:12px;">${r.pangkat||'—'}</td>
+      <td>${i+1}</td>
+      <td>${r.pangkat||'—'}</td>
       <td><strong>${r.nama}</strong></td>
-      <td style="font-size:12px;">${r.bertugas.replace('BALAI POLIS ','')}</td>
+      <td>${r.bertugas.replace('BALAI POLIS ','')}</td>
       <td><span class="badge ${badgeClass(r.jenis)}">${r.jenis||'—'}</span></td>
-      <td style="font-size:12px;max-width:200px;">${r.lain||'—'}</td>
-      <td><strong>${r.jam||'—'}</strong></td>
-      <td>${r.masa||'—'}</td>
+      <td style="max-width:200px;word-break:break-word;">${r.lain||'—'}</td>
+      <td style="text-align:center;font-weight:600;">${r.jam||'—'}</td>
+      <td style="text-align:center;">${r.masa||'—'}</td>
       <td>${r.jantina||'—'}</td>
       <td>${r.pejawatan||'—'}</td>
     </tr>`).join('');
@@ -924,24 +1269,37 @@ function renderDistrictTab(key,data,dateStr){
 
 // ── Render: Penugasan card ────────────────────────────────────────
 
-function renderPenugasanCard(cardId,data,dateStr,isAll){
+function renderPenugasanCard(cardId, data, dateStr, isAll){
   const card=document.getElementById(cardId); if(!card) return;
   const JENIS_ORDER=['SJR','MPV','PEJABAT PERTANYAAN','DCC','SENTRI / PROWLER','BIT/RONDAAN','TUGAS PENTADBIRAN','LAIN-LAIN TUGAS'];
   const counts={};
   JENIS_ORDER.forEach(j=>{ counts[j]={peg:0,apr:0}; });
-  // Count every record — anything not in JENIS_ORDER falls into LAIN-LAIN TUGAS
-  data.forEach(d=>{
-    const raw = d.jenis||'LAIN-LAIN TUGAS';
-    const j = JENIS_ORDER.includes(raw) ? raw : 'LAIN-LAIN TUGAS';
-    if(isPeg(d)) counts[j].peg++; else counts[j].apr++;
-  });
-  // Totals derived directly from data — always matches row sum
-  const totalPeg = data.filter(d=>isPeg(d)).length;
-  const totalApr = data.length - totalPeg;
+  data.forEach(d=>{ const j=d.jenis||'LAIN-LAIN TUGAS'; if(!counts[j]) counts[j]={peg:0,apr:0}; if(isPeg(d)) counts[j].peg++; else counts[j].apr++; });
+  let totalPeg=0,totalApr=0;
+  JENIS_ORDER.forEach(j=>{ totalPeg+=counts[j].peg; totalApr+=counts[j].apr; });
   let rows='';
-  JENIS_ORDER.forEach(j=>{ rows+=`<tr><td class="penugasan-cell">${j}</td><td class="peg-cell">${counts[j].peg}</td><td class="apr-cell">${counts[j].apr}</td></tr>`; });
+  JENIS_ORDER.forEach(j=>{ rows+=`<tr><td style="padding:7px 14px;background:#fffde8;font-size:13px;font-weight:600;color:#333;border-bottom:1px solid #e8e8c8;">${j}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].peg}</td><td style="padding:7px 14px;background:#fffde8;text-align:center;font-weight:600;border-bottom:1px solid #e8e8c8;">${counts[j].apr}</td></tr>`; });
+  if(!dateStr){ const now=new Date(); const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu']; const months=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember']; dateStr=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear(); }
   const cardTitle=isAll?'JUMLAH PENUGASAN HARIAN':'PENUGASAN HARIAN';
-  card.innerHTML=`<div class="pngs-header"><div class="pngs-title">${cardTitle}</div><div class="pngs-date">${dateStr}</div></div><table class="pngs-table"><thead><tr><th class="penugasan">PENUGASAN</th><th class="peg">PEG</th><th class="apr">APR</th></tr></thead><tbody>${rows}<tr class="total-row"><td class="penugasan-cell">JUMLAH KESELURUHAN</td><td class="peg-cell">${totalPeg}</td><td class="apr-cell">${totalApr}</td></tr></tbody></table>`;
+  card.innerHTML=`
+    <div style="padding:14px 16px 10px;background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:0;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;">📋 ${cardTitle}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">${dateStr}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr>
+      <th style="padding:11px 14px;background:#c8c8c8;text-align:left;font-size:12px;font-weight:700;color:#333;letter-spacing:.05em;text-transform:uppercase;">PENUGASAN</th>
+      <th style="padding:11px 14px;background:#f4a261;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">PEG</th>
+      <th style="padding:11px 14px;background:#4a90d9;text-align:center;font-size:12px;font-weight:700;color:white;letter-spacing:.05em;min-width:60px;">APR</th>
+    </tr></thead>
+    <tbody>${rows}
+      <tr>
+        <td style="padding:10px 14px;background:#d0d0d0;font-weight:700;font-size:13px;color:#222;">JUMLAH KESELURUHAN</td>
+        <td style="padding:10px 14px;background:#f4a261;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalPeg}</td>
+        <td style="padding:10px 14px;background:#4a90d9;text-align:center;font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:white;">${totalApr}</td>
+      </tr>
+    </tbody>
+  </table>`;
 }
 
 // ── Render: Summary table ─────────────────────────────────────────
@@ -956,23 +1314,46 @@ function renderSummaryTable(containerId,data){
   rows.sort((a,b)=>a.balai.localeCompare(b.balai)||a.jenis.localeCompare(b.jenis));
   const byBalai={};
   rows.forEach(r=>{ if(!byBalai[r.balai]) byBalai[r.balai]=[]; byBalai[r.balai].push(r); });
-  let html=`<div id="summary_${containerId}" class="table-wrap" style="margin-bottom:18px;"><div class="card-header" style="padding:16px 20px 0;"><div class="card-title">📊 Ringkasan Penugasan Mengikut Balai &amp; Jenis Tugas</div><div class="card-badge">${data.length} anggota</div></div><div style="overflow-x:auto;margin-top:12px;"><table><thead><tr><th>BALAI</th><th>TUGAS</th><th style="text-align:center;">BILANGAN ANGGOTA</th></tr></thead><tbody>`;
+  let html=`<div id="summary_${containerId}" class="table-wrap" style="margin-bottom:18px;">
+    <div class="card-header" style="padding:16px 20px 0;">
+      <div class="card-title">📊 Ringkasan Penugasan Mengikut Balai &amp; Jenis Tugas</div>
+      <div class="card-badge">${data.length} anggota</div>
+    </div>
+    <div style="overflow-x:auto;margin-top:12px;">
+    <table>
+      <thead><tr>
+        <th>BALAI</th>
+        <th>TUGAS</th>
+        <th style="text-align:center;min-width:100px;">BILANGAN</th>
+      </tr></thead>
+      <tbody>`;
   let grand=0;
   Object.keys(byBalai).sort().forEach(balai=>{
     const entries=byBalai[balai];
     entries.sort((a,b)=>{ const ia=JENIS_ORDER.indexOf(a.jenis),ib=JENIS_ORDER.indexOf(b.jenis); return(ia<0?99:ia)-(ib<0?99:ib); });
     const tot=entries.reduce((s,e)=>s+e.count,0); grand+=tot;
-    entries.forEach((e,idx)=>{ html+=`<tr>${idx===0?`<td rowspan="${entries.length}" style="font-weight:700;color:var(--navy);vertical-align:middle;background:#f8fafc;">${balai.replace('BALAI POLIS ','BP ')}</td>`:''}<td><span class="badge ${badgeClass(e.jenis)}">${e.jenis}</span></td><td style="text-align:center;font-weight:600;">${e.count}</td></tr>`; });
-    html+=`<tr style="background:#f1f5f9;"><td colspan="2" style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;">Jumlah — ${balai.replace('BALAI POLIS ','BP ')}</td><td style="text-align:center;color:var(--navy);font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;">${tot}</td></tr>`;
+    entries.forEach((e,idx)=>{
+      html+=`<tr>
+        ${idx===0?`<td rowspan="${entries.length}" style="font-weight:700;color:var(--navy);vertical-align:middle;background:#f8fafc;">${balai.replace('BALAI POLIS ','BP ')}</td>`:''}
+        <td><span class="badge ${badgeClass(e.jenis)}">${e.jenis}</span></td>
+        <td style="text-align:center;font-weight:600;">${e.count}</td>
+      </tr>`;
+    });
+    html+=`<tr style="background:#f1f5f9;">
+      <td colspan="2" style="color:var(--muted);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;font-weight:700;">Jumlah — ${balai.replace('BALAI POLIS ','BP ')}</td>
+      <td style="text-align:center;color:var(--navy);font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;">${tot}</td>
+    </tr>`;
   });
-  html+=`<tr style="background:var(--navy);"><td colspan="2" style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--gold);">JUMLAH KESELURUHAN</td><td style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);">${grand}</td></tr>`;
+  html+=`<tr style="background:var(--navy);">
+    <td colspan="2" style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--gold);">JUMLAH KESELURUHAN</td>
+    <td style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);">${grand}</td>
+  </tr>`;
   html+=`</tbody></table></div></div>`;
   const container=document.getElementById(containerId); if(container) container.insertAdjacentHTML('afterend',html);
 }
 
 // ── Countdown / clock ────────────────────────────────────────────
 
-// FIX #8 — nextRefresh element now exists in HTML; this code now actually works
 function startCountdown(){
   clearInterval(countdownTimer);
   countdownSec=300;
@@ -1001,10 +1382,9 @@ window.addEventListener('DOMContentLoaded',async()=>{
   if(savedUser&&savedToken){
     currentUser=JSON.parse(savedUser);
     currentToken=savedToken;
-    // Restore district passwords from session cache, then re-fetch in background
     const cachedPw = sessionStorage.getItem('districtPasswords');
     if(cachedPw) DISTRICT_PASSWORDS = JSON.parse(cachedPw);
-    fetchDistrictPasswords(); // refresh silently in background
+    fetchDistrictPasswords();
     showDashboard();
   } else {
     document.getElementById('loginPage').style.display='flex';
