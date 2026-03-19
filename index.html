@@ -5,6 +5,234 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SSPDRM - Dashboard Penugasan (Secure)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── CARIAN ANGGOTA (moved from broken script src tag) ─────────────
+
+function initCarianTab(){
+  // Populate year dropdown
+  const sel = document.getElementById('carian_tahun');
+  if(sel && sel.options.length === 0){
+    const yr = new Date().getFullYear();
+    for(let y = yr; y >= yr-3; y--){
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      sel.appendChild(opt);
+    }
+  }
+  // Set current month/year as default
+  const now = new Date();
+  const bln = document.getElementById('carian_bulan');
+  if(bln) bln.value = now.getMonth() + 1;
+  // Reset display
+  document.getElementById('carian_profile').style.display = 'none';
+  document.getElementById('carian_table_wrap').style.display = 'none';
+  document.getElementById('carian_empty').style.display = 'block';
+  document.getElementById('carian_empty_msg').textContent = 'Masukkan Nombor Badan untuk mencari rekod penugasan.';
+  document.getElementById('carian_jam_total').textContent = '—';
+}
+
+async function doCarianSearch(){
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  if(!currentUser || (!isAdmin && !caianUnlockedDistrict)) return;
+
+  const noBadan = document.getElementById('carian_nobadan').value.trim();
+  const bulan   = parseInt(document.getElementById('carian_bulan').value);
+  const tahun   = parseInt(document.getElementById('carian_tahun').value);
+
+  if(!noBadan){
+    document.getElementById('carian_empty_msg').textContent = '⚠️ Sila masukkan Nombor Badan.';
+    document.getElementById('carian_empty').style.display = 'block';
+    document.getElementById('carian_profile').style.display = 'none';
+    document.getElementById('carian_table_wrap').style.display = 'none';
+    return;
+  }
+
+  const btn = document.getElementById('carian_btn');
+  btn.innerHTML = '<span class="spinner"></span> Mencari...';
+  btn.disabled = true;
+
+  document.getElementById('carian_profile').style.display = 'none';
+  document.getElementById('carian_table_wrap').style.display = 'none';
+  document.getElementById('carian_empty').style.display = 'none';
+
+  let rows = [];
+
+  try {
+    // Single fetch — pass bulan & tahun so Apps Script returns the whole month at once
+    const url = `${APPS_SCRIPT_URL}?action=getData&username=${encodeURIComponent(currentUser.username)}&token=${encodeURIComponent(currentToken)}&bulan=${bulan}&tahun=${tahun}`;
+    const res  = await fetch(url);
+    const json = await res.json();
+
+    if(json.error){
+      // Apps Script may not support bulan/tahun — fall back to allData already in memory
+      const expanded = allData.length ? allData : [];
+      rows = expanded.filter(r => {
+        const namaStr = String(r.nama || '').toUpperCase();
+        if(!namaStr.includes(noBadan.toUpperCase())) return false;
+        const tarikh = normaliseDate(r.tarikh || '');
+        if(!tarikh) return false;
+        const p = tarikh.split('/');
+        if(parseInt(p[1]) !== bulan || parseInt(p[2]) !== tahun) return false;
+        if(!isAdmin && caianUnlockedDistrict){
+          const allowedDaerah = DAERAH_MAP[caianUnlockedDistrict];
+          if(normDaerah(r.daerah) !== allowedDaerah) return false;
+        }
+        return true;
+      });
+    } else if(json.rows && json.rows.length > 0){
+      const expanded = expandRows(json.rows);
+      // Filter by month/year from tarikh, then by nombor badan in nama
+      // Non-admin: also restrict to their unlocked district only
+      rows = expanded.filter(r => {
+        const namaStr = String(r.nama || '').toUpperCase();
+        if(!namaStr.includes(noBadan.toUpperCase())) return false;
+        const tarikh = normaliseDate(r.tarikh || '');
+        if(!tarikh) return false;
+        const p = tarikh.split('/');
+        if(parseInt(p[1]) !== bulan || parseInt(p[2]) !== tahun) return false;
+        // District restriction for non-admin
+        if(!isAdmin && caianUnlockedDistrict){
+          const allowedDaerah = DAERAH_MAP[caianUnlockedDistrict];
+          if(normDaerah(r.daerah) !== allowedDaerah) return false;
+        }
+        return true;
+      });
+    }
+  } catch(e){
+    document.getElementById('carian_empty_msg').textContent = '❌ Ralat rangkaian. Sila cuba semula.';
+    document.getElementById('carian_empty').style.display = 'block';
+    btn.innerHTML = '🔍 SEMAK';
+    btn.disabled = false;
+    return;
+  }
+
+  if(rows.length === 0){
+    document.getElementById('carian_empty_msg').textContent = `❌ Tiada rekod ditemui untuk Nombor Badan "${noBadan}" bagi ${getMonthName(bulan)} ${tahun}.`;
+    document.getElementById('carian_empty').style.display = 'block';
+    document.getElementById('carian_jam_total').textContent = '—';
+  } else {
+    renderCarianResult(rows, noBadan, bulan, tahun, {});
+  }
+
+  btn.innerHTML = '🔍 SEMAK';
+  btn.disabled = false;
+}
+
+function getMonthName(m){
+  return ['','Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'][parseInt(m)];
+}
+
+function renderCarianResult(rows, noBadan, bulan, tahun, profile){
+  profile = profile || {};
+
+  // r.nama contains "NAMA (NOMBOR_BADAN)" or "NOMBOR - NAMA", extract clean name
+  const rawNama = rows.map(r=>r.nama).find(v=>v) || '—';
+  // Strip the nombor badan from the name string for cleaner display
+  const cleanNama = rawNama
+    .replace(new RegExp('\b' + noBadan.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\b','gi'), '')
+    .replace(/[-–()\s]+$/, '').replace(/^[-–()\s]+/, '').trim() || rawNama;
+
+  const nama    = profile.nama    || cleanNama;
+  const pangkat = profile.pangkat || rows.map(r=>r.pangkat).find(v=>v) || '—';
+  const daerah  = profile.daerah  || rows.map(r=>r.daerah).find(v=>v)  || '—';
+  const balai   = profile.balai   || rows.map(r=>r.balai).find(v=>v)   || '—';
+  const jantina = profile.jantina || rows.map(r=>r.jantina).find(v=>v) || '—';
+
+  // Build day map
+  const daysInMonth = new Date(tahun, bulan, 0).getDate();
+  const dayMap = {};
+  for(let d = 1; d <= daysInMonth; d++) dayMap[d] = [];
+
+  rows.forEach(r => {
+    // Always normalise first — handles ISO timestamps, yyyy-mm-dd, d/m/yyyy, serial numbers
+    const tarikh = normaliseDate(String(r.tarikh||''));
+    if(!tarikh) return;
+    const parts = tarikh.split('/');
+    if(parts.length !== 3) return;
+    const day = parseInt(parts[0]);
+    if(day && day >= 1 && day <= daysInMonth) dayMap[day].push(r);
+  });
+
+  // Compute stats
+  const activeDays = Object.values(dayMap).filter(v=>v.length>0).length;
+  const totalJam   = rows.reduce((s,r)=>s+(parseFloat(r.jam)||0), 0);
+
+  // Update header KPI
+  document.getElementById('carian_jam_total').textContent = totalJam + ' JAM';
+
+  // Profile card
+  document.getElementById('p_nobadan').textContent   = noBadan;
+  document.getElementById('p_nama').textContent      = nama;
+  document.getElementById('p_pangkat').textContent   = pangkat;
+  document.getElementById('p_jantina').textContent   = jantina;
+  document.getElementById('p_daerah').textContent    = daerah.replace('BALAI POLIS ','');
+  document.getElementById('p_balai').textContent     = balai.replace('BALAI POLIS ','');
+  document.getElementById('p_kekerapan').textContent = activeDays + ' KALI';
+  document.getElementById('p_jumlah_jam').textContent= totalJam + ' JAM';
+  document.getElementById('carian_profile').style.display = 'block';
+
+  // Period label
+  document.getElementById('carian_period').textContent = `${getMonthName(bulan)} ${tahun}`;
+
+  // Build calendar table
+  const S = {
+    thDay:   'padding:5px 3px;text-align:center;font-size:10px;font-weight:700;background:#1a3a7a;color:#fff;border:1px solid #334;min-width:36px;',
+    thLabel: 'padding:6px 10px;text-align:left;font-size:11px;font-weight:700;background:#2a4a8a;color:#fff;border:1px solid #334;white-space:nowrap;min-width:80px;',
+    tdEmpty: 'padding:5px 3px;text-align:center;font-size:11px;border:1px solid #e2e8f0;background:#f8fafc;color:#ccc;',
+    tdData:  'padding:5px 3px;text-align:center;font-size:11px;border:1px solid #e2e8f0;background:#fffde8;font-weight:600;color:#1a3a7a;',
+    tdLabel: 'padding:6px 10px;text-align:left;font-size:11px;font-weight:600;border:1px solid #e2e8f0;background:#eef2ff;color:#1e40af;white-space:nowrap;',
+    tdTotal: 'padding:6px 10px;text-align:center;font-size:13px;font-weight:700;border:1px solid #e2e8f0;background:#dbeafe;color:#1e40af;',
+  };
+
+  const days = Array.from({length:daysInMonth}, (_,i)=>i+1);
+
+  let hdrDays = `<th style="${S.thLabel}">MAKLUMAT</th>`;
+  days.forEach(d => { hdrDays += `<th style="${S.thDay}">${d}</th>`; });
+  hdrDays += `<th style="${S.thDay}">JUMLAH</th>`;
+
+  const buildRow = (label, fn) => {
+    let cells = `<td style="${S.tdLabel}">${label}</td>`;
+    let rowTotal = 0;
+    days.forEach(d => {
+      const recs = dayMap[d];
+      if(recs && recs.length){
+        const val = fn(recs);
+        cells += `<td style="${S.tdData}">${val||'—'}</td>`;
+        const num = parseFloat(val);
+        if(!isNaN(num)) rowTotal += num;
+      } else {
+        cells += `<td style="${S.tdEmpty}"></td>`;
+      }
+    });
+    const tot = label.toLowerCase().includes('jam') && rowTotal > 0 ? rowTotal : '';
+    cells += `<td style="${S.tdTotal}">${tot||''}</td>`;
+    return `<tr>${cells}</tr>`;
+  };
+
+  const tbl = document.getElementById('carian_calendar');
+  tbl.innerHTML = `
+    <thead><tr>${hdrDays}</tr></thead>
+    <tbody>
+      ${buildRow('Tugasan Jam',    recs => recs.map(r=>r.jam||'').filter(Boolean).join('<br>'))}
+      ${buildRow('Tugasan',        recs => recs.map(r=>r.jenis||'').filter(Boolean).join('<br>'))}
+      ${buildRow('Lain2 Tugas',    recs => recs.map(r=>r.lain||'').filter(Boolean).join('<br>'))}
+      ${buildRow('Masa Mula',      recs => recs.map(r=>r.masa||'').filter(Boolean).join('<br>'))}
+      ${buildRow('Masa Tamat', recs => recs.map(r => {
+        if(!r.masa || r.masa === '—' || r.masa === '—' || !r.jam) return '';
+        const match = r.masa.match(/^(\d{1,2}):(\d{2})$/);
+        if(!match) return '';
+        const totalMins = parseInt(match[1])*60 + parseInt(match[2]) + Math.round(parseFloat(r.jam)*60);
+        const h = Math.floor(totalMins/60) % 24;
+        const m = totalMins % 60;
+        return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      }).filter(Boolean).join('<br>'))}
+    </tbody>`;
+
+  document.getElementById('carian_table_wrap').style.display = 'block';
+  document.getElementById('carian_empty').style.display = 'none';
+}
+
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -394,6 +622,43 @@
   }
 
   /* =====================
+     CARIAN BULANAN
+  ===================== */
+  .carian-wrap{background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .carian-header{background:linear-gradient(135deg,#16a34a,#15803d);padding:16px 24px;}
+  .carian-header-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:.06em;text-transform:uppercase;}
+  .carian-header-sub{font-size:12px;color:rgba(255,255,255,0.75);margin-top:3px;}
+  .carian-controls{display:flex;flex-wrap:wrap;gap:12px;padding:20px 24px;background:#f8fafc;border-bottom:1px solid var(--border);align-items:flex-end;}
+  .carian-field{display:flex;flex-direction:column;gap:5px;}
+  .carian-field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .carian-field select,.carian-field input{border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'Inter',sans-serif;color:var(--dark);outline:none;background:white;min-width:100px;}
+  .carian-field select:focus,.carian-field input:focus{border-color:var(--navy);}
+  .carian-btn{background:var(--navy);color:white;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;transition:opacity .2s;white-space:nowrap;}
+  .carian-btn:hover{opacity:.85;}
+  .carian-btn.reset{background:#64748b;}
+  .carian-profile{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 24px;border-bottom:1px solid var(--border);}
+  .carian-profile-item{display:flex;flex-direction:column;gap:3px;}
+  .carian-profile-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .carian-profile-value{font-size:14px;font-weight:600;color:var(--dark);}
+  .carian-summary{display:flex;gap:16px;padding:12px 24px;background:#eff6ff;border-bottom:1px solid #bfdbfe;}
+  .carian-summary-item{font-size:13px;color:#1e40af;font-weight:600;}
+  .carian-summary-item span{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;margin-left:6px;}
+  /* Monthly grid table */
+  .carian-table-wrap{overflow-x:auto;padding:0;}
+  .carian-table{border-collapse:collapse;font-size:11px;min-width:100%;}
+  .carian-table th{padding:6px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f8fafc;border:1px solid var(--border);white-space:nowrap;}
+  .carian-table th.row-label{text-align:left;padding:6px 10px;min-width:90px;background:#f1f5f9;}
+  .carian-table td{padding:5px 4px;text-align:center;border:1px solid var(--border);font-size:11px;vertical-align:middle;}
+  .carian-table td.row-label{text-align:left;padding:5px 10px;font-weight:600;background:#f8fafc;white-space:nowrap;font-size:11px;}
+  .carian-table td.has-data{background:#dbeafe;font-weight:700;color:#1e40af;}
+  .carian-table td.has-data-green{background:#dcfce7;font-weight:700;color:#15803d;}
+  .carian-table td.has-data-amber{background:#fef9c3;font-weight:700;color:#854d0e;font-size:9px;}
+  .carian-table tr.total-row td{background:#001f5c;color:#FFD700;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;border-color:#0a3fa8;}
+  .carian-table tr.total-row td.row-label{background:#001f5c;color:#FFD700;text-align:left;}
+  .carian-empty{text-align:center;padding:48px;color:var(--muted);}
+  .carian-loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+
+  /* =====================
      UNLOCK / PROTECTED
   ===================== */
   .unlock-container{background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));border-radius:10px;padding:20px;margin:20px 0;text-align:center;color:white;}
@@ -508,6 +773,8 @@
   <div class="tab d3"     id="tab_btn_d3"   onclick="switchTab('d3')">🟡 Alor Gajah</div>
   <div class="tab d4"     id="tab_btn_d4"   onclick="switchTab('d4')">🟣 IPK SSPDRM</div>
   <div class="tab hidden" id="tab_btn_log"  onclick="switchTab('log')">📋 Log Masuk</div>
+  <div class="tab hidden" id="tab_btn_carian" onclick="switchTab('carian')">🔍 Carian Anggota</div>
+  <div class="tab hidden" id="tab_btn_carian" onclick="switchTab('carian')">🔍 Carian Anggota</div>
   <div class="date-picker-area">
     <label class="date-picker-label">📆 Pilih Tarikh:</label>
     <input type="date" id="todayDatePicker" class="date-picker-input" onchange="onDatePickerChange()"/>
@@ -760,6 +1027,150 @@
     </div>
   </div><!-- /tab-log -->
 
+  <!-- ── CARIAN ANGGOTA TAB ── -->
+  <div class="tab-content" id="tab-carian">
+    <div class="date-banner" style="background:linear-gradient(135deg,#064e3b 0%,#059669 100%);">
+      <div class="date-banner-left">
+        <div class="date-icon">🔍</div>
+        <div>
+          <div class="date-banner-title">Sistem Pencarian Data Penugasan Anggota</div>
+          <div class="date-banner-sub">Semak rekod penugasan bulanan mengikut Nombor Badan</div>
+        </div>
+      </div>
+      <div class="date-banner-count">
+        <div class="date-banner-num" id="carian_jam_total">—</div>
+        <div class="date-banner-label">Jumlah Jam Bertugas</div>
+      </div>
+    </div>
+
+    <!-- Carian Lock Overlay (non-admin) -->
+    <div class="unlock-container" id="caianLockSection" style="display:none;">
+      <div class="unlock-title">🔒 AKSES TERHAD - SISTEM PENCARIAN ANGGOTA</div>
+      <p style="color:rgba(255,255,255,0.8);font-size:13px;margin-bottom:16px;">
+        Masukkan kata laluan daerah anda untuk mengakses carian rekod penugasan.<br>
+        <span style="font-size:11px;opacity:0.7;">Setiap kata laluan hanya membenarkan carian dalam daerah berkenaan sahaja.</span>
+      </p>
+      <div class="unlock-input-group">
+        <input type="password" class="unlock-input" id="caianPasswordInput" placeholder="Masukkan kata laluan daerah..." onkeypress="if(event.key==='Enter') unlockCarian()">
+        <button class="unlock-btn" onclick="unlockCarian()">BUKA KUNCI</button>
+      </div>
+      <div class="unlock-error" id="caianLockError" style="display:none;"></div>
+    </div>
+
+    <!-- District access notice (shown after unlock) -->
+    <div id="caianDistrictNotice" style="display:none;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:13px;font-weight:600;color:#15803d;"></div>
+
+    <!-- Carian Content (locked for non-admin until password entered) -->
+    <div id="caianContent">
+    <!-- Search Controls -->
+    <div style="background:#fff;border-radius:12px;border:1px solid var(--border);padding:20px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+      <div style="display:grid;grid-template-columns:auto 160px 160px 1fr auto;gap:12px;align-items:end;">
+        <!-- Nombor Badan -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Nombor Badan</label>
+          <input type="text" id="carian_nobadan" placeholder="cth: 39365"
+            style="border:2px solid #dc2626;border-radius:8px;padding:10px 14px;font-size:14px;font-family:Inter,sans-serif;font-weight:700;outline:none;width:140px;color:var(--dark);background:#fff5f5;"
+            onkeypress="if(event.key==='Enter') doCarianSearch()"
+          />
+        </div>
+        <!-- Bulan -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">📅 Bulan</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="background:#FFD700;border-radius:6px;padding:6px 12px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;color:#001f5c;white-space:nowrap;">BULAN</div>
+            <select id="carian_bulan" style="border:1.5px solid var(--border);border-radius:8px;padding:9px 10px;font-size:14px;font-family:Inter,sans-serif;outline:none;color:var(--dark);background:#fff;cursor:pointer;">
+              <option value="1">Januari</option><option value="2">Februari</option><option value="3">Mac</option>
+              <option value="4">April</option><option value="5">Mei</option><option value="6">Jun</option>
+              <option value="7">Julai</option><option value="8">Ogos</option><option value="9">September</option>
+              <option value="10">Oktober</option><option value="11">November</option><option value="12">Disember</option>
+            </select>
+          </div>
+        </div>
+        <!-- Tahun -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">📅 Tahun</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="background:#FFD700;border-radius:6px;padding:6px 12px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;color:#001f5c;white-space:nowrap;">TAHUN</div>
+            <select id="carian_tahun" style="border:1.5px solid var(--border);border-radius:8px;padding:9px 10px;font-size:14px;font-family:Inter,sans-serif;outline:none;color:var(--dark);background:#fff;cursor:pointer;">
+            </select>
+          </div>
+        </div>
+        <!-- Spacer -->
+        <div></div>
+        <!-- Search Button -->
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:transparent;margin-bottom:6px;">.</label>
+          <button onclick="doCarianSearch()" id="carian_btn"
+            style="background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));color:white;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-family:Inter,sans-serif;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
+            🔍 SEMAK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div id="carian_profile" style="display:none;background:#fff;border-radius:12px;border:1px solid var(--border);padding:0;margin-bottom:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <div style="background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));padding:12px 20px;">
+        <div style="font-family:Rajdhani,sans-serif;font-size:18px;font-weight:700;color:var(--gold);letter-spacing:.06em;">📋 MAKLUMAT ANGGOTA</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
+        <div style="padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Nombor Badan</div>
+          <div style="font-family:Rajdhani,sans-serif;font-size:20px;font-weight:700;color:var(--navy);" id="p_nobadan">—</div>
+        </div>
+        <div style="padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Nama</div>
+          <div style="font-size:15px;font-weight:700;color:var(--dark);" id="p_nama">—</div>
+        </div>
+        <div style="padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Pangkat</div>
+          <div style="font-size:14px;font-weight:600;color:var(--dark);" id="p_pangkat">—</div>
+        </div>
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Jantina</div>
+          <div style="font-size:14px;font-weight:600;color:var(--dark);" id="p_jantina">—</div>
+        </div>
+        <div style="padding:14px 18px;border-right:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Daerah</div>
+          <div style="font-size:14px;font-weight:600;color:var(--dark);" id="p_daerah">—</div>
+        </div>
+        <div style="padding:14px 18px;border-right:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Balai Berdaftar</div>
+          <div style="font-size:14px;font-weight:600;color:var(--dark);" id="p_balai">—</div>
+        </div>
+        <div style="padding:14px 18px;border-right:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Kekerapan Bertugas</div>
+          <div style="font-family:Rajdhani,sans-serif;font-size:22px;font-weight:700;color:#059669;" id="p_kekerapan">— KALI</div>
+        </div>
+        <div style="padding:14px 18px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Jumlah Jam Bertugas</div>
+          <div style="font-family:Rajdhani,sans-serif;font-size:22px;font-weight:700;color:var(--navy);" id="p_jumlah_jam">— JAM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Calendar Table -->
+    <div id="carian_table_wrap" style="display:none;">
+      <div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="background:linear-gradient(135deg,var(--navy-dark),var(--navy-mid));padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:Rajdhani,sans-serif;font-size:18px;font-weight:700;color:var(--gold);letter-spacing:.06em;">📅 JAM TUGASAN HARIAN</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.8);" id="carian_period">—</div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="carian_calendar" style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty / Error state -->
+    <div id="carian_empty" style="display:none;text-align:center;padding:48px 24px;color:var(--muted);">
+      <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+      <div style="font-size:15px;font-weight:600;" id="carian_empty_msg">Masukkan Nombor Badan untuk mencari rekod penugasan.</div>
+    </div>
+    </div><!-- /caianContent -->
+  </div><!-- /tab-carian -->
+
 </main>
 
 <footer>
@@ -772,6 +1183,9 @@
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyICf49UavmO6vYlMLp5yBrnVKHcyS6AMtGgKw39j6BKZcaBg4Lp_VgauS_WYcaBwu_/exec';
 let DISTRICT_PASSWORDS = {};
+// Carian tab — district-restricted passwords (loaded from district_config sheet)
+// Keys: carian_d1, carian_d2, carian_d3, carian_d4 — stored alongside district passwords
+let caianUnlockedDistrict = null; // null = locked, 'd1'/'d2'/etc = unlocked for that district
 
 const warmupPromise = fetch(APPS_SCRIPT_URL + '?action=warmup&t=' + Date.now())
   .then(() => {
@@ -804,6 +1218,8 @@ function getTodayFull(){ const n=new Date(), days=['Ahad','Isnin','Selasa','Rabu
 function normaliseDate(str){
   if(!str) return '';
   str = str.trim();
+
+  // ISO timestamp with T — parse with timezone
   if(str.includes('T')){
     const d = new Date(str);
     if(isNaN(d.getTime())) return str;
@@ -811,8 +1227,21 @@ function normaliseDate(str){
     const get = t => parts.find(p=>p.type===t)?.value||'0';
     return parseInt(get('day'))+'/'+parseInt(get('month'))+'/'+get('year');
   }
-  if(str.includes('-')){ const p=str.split('-'); if(p.length===3) return parseInt(p[2])+'/'+parseInt(p[1])+'/'+p[0]; }
-  const p=str.split('/'); if(p.length===3) return parseInt(p[0])+'/'+parseInt(p[1])+'/'+p[2];
+
+  // yyyy-mm-dd — treat as local date (NOT UTC) to avoid -1 day timezone shift
+  if(str.includes('-')){
+    const p = str.split('-');
+    if(p.length === 3){
+      // Parse as local midnight to avoid UTC offset shifting the date
+      const d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+      if(!isNaN(d.getTime())) return d.getDate()+'/'+( d.getMonth()+1)+'/'+d.getFullYear();
+    }
+  }
+
+  // dd/mm/yyyy or d/m/yyyy — already correct format
+  const p = str.split('/');
+  if(p.length === 3) return parseInt(p[0])+'/'+parseInt(p[1])+'/'+p[2];
+
   return str;
 }
 
@@ -856,16 +1285,20 @@ function expandRows(rows){
     const pejawatan=String(row[12]||'').trim();
     const jantina=String(row[13]||'').trim();
     const pangkat=String(row[14]||'').trim();
-    const tarikh=String(row[15]||'').trim();
+    // Tarikh tugasan — user-entered dd/mm/yyyy in row[15]
+    // Fall back to submission timestamp if tarikh is empty
+    let tarikh = String(row[15]||'').trim();
+    if(!tarikh && timestamp) tarikh = normaliseDate(timestamp);
     const jenis=normalizeJenis(String(row[16]||'').trim());
     const lain=String(row[19]||'').trim();
     const masa=formatTime(row[22]);
+    const masaTamat=formatTime(row[23]||'');
     const jam=parseFloat(row[18])||0;
     const balai=String(row[10]||'').trim()||'—';
     const nama=[3,5,7,9].map(i=>String(row[i]||'').trim()).find(v=>v)||'';
     if(!daerah) return;
     if(!nama&&balai==='—') return;
-    out.push({timestamp,daerah,balai,nama:nama||balai,bertugas,pejawatan,jantina,pangkat,jenis,jam,masa,tarikh,lain});
+    out.push({timestamp,daerah,balai,nama:nama||balai,bertugas,pejawatan,jantina,pangkat,jenis,jam,masa,masaTamat,tarikh,lain});
   });
   return out;
 }
@@ -1028,11 +1461,13 @@ function showDashboard(){
   if(currentUser.role==='admin'){
     ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.remove('hidden'));
     document.getElementById('tab_btn_log').classList.remove('hidden');
+    document.getElementById('tab_btn_carian').classList.remove('hidden');
     switchTab('today');
   } else {
     ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.add('hidden'));
     document.getElementById('tab_btn_'+currentUser.district).classList.remove('hidden');
     document.getElementById('tab_btn_log').classList.add('hidden');
+    document.getElementById('tab_btn_carian').classList.remove('hidden');
     switchTab(currentUser.district);
   }
   loadData();
@@ -1123,6 +1558,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   const tc=document.getElementById('tab-'+name); if(tc) tc.classList.add('active');
   if(name==='log') renderLogTab();
+  if(name==='carian') initCarian();
 }
 
 // ── Date helpers ─────────────────────────────────────────────────
@@ -1405,6 +1841,135 @@ function updateClock(){
 
 // ── Boot ─────────────────────────────────────────────────────────
 
+// ══════════════════════════════════════════════
+// CARIAN ANGGOTA — Monthly Duty Search (Admin)
+// ══════════════════════════════════════════════
+
+function initCarian(){
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  // Populate year dropdown if empty
+  const sel = document.getElementById('carian_tahun');
+  if(sel && sel.options.length === 0){
+    for(let y = currentYear + 1; y >= currentYear - 3; y--){
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      if(y === currentYear) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  // Set current month as default
+  document.getElementById('carian_bulan').value = now.getMonth() + 1;
+
+  // Show/hide lock overlay based on role and unlock state
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  const lockSection = document.getElementById('caianLockSection');
+  const caianContentEl = document.getElementById('caianContent');
+  if(isAdmin || caianUnlockedDistrict){
+    lockSection.style.display = 'none';
+    caianContentEl.style.display = 'block';
+    // Show which district is accessible (non-admin)
+    const districtNotice = document.getElementById('caianDistrictNotice');
+    if(districtNotice){
+      if(!isAdmin && caianUnlockedDistrict){
+        const dName = { d1:'Melaka Tengah', d2:'Jasin', d3:'Alor Gajah', d4:'IPK SSPDRM' };
+        districtNotice.textContent = '🔓 Akses terhad: ' + (dName[caianUnlockedDistrict] || caianUnlockedDistrict);
+        districtNotice.style.display = 'block';
+      } else {
+        districtNotice.style.display = 'none';
+      }
+    }
+  } else {
+    lockSection.style.display = 'block';
+    caianContentEl.style.display = 'none';
+    document.getElementById('caianPasswordInput').value = '';
+    document.getElementById('caianLockError').style.display = 'none';
+  }
+}
+
+function unlockCarian(){
+  const input = document.getElementById('caianPasswordInput').value.trim();
+  const errEl = document.getElementById('caianLockError');
+  if(!input){ errEl.textContent = '⚠️ Sila masukkan kata laluan.'; errEl.style.display = 'block'; return; }
+
+  // Check against all district carian passwords from district_config sheet
+  const CARIAN_MAP = { carian_d1:'d1', carian_d2:'d2', carian_d3:'d3', carian_d4:'d4' };
+  let matched = null;
+  for(const [key, district] of Object.entries(CARIAN_MAP)){
+    if(DISTRICT_PASSWORDS[key] && input === DISTRICT_PASSWORDS[key]){
+      matched = district;
+      break;
+    }
+  }
+
+  if(matched){
+    caianUnlockedDistrict = matched;
+    document.getElementById('caianLockSection').style.display = 'none';
+    document.getElementById('caianContent').style.display = 'block';
+    errEl.style.display = 'none';
+    const dName = { d1:'Melaka Tengah', d2:'Jasin', d3:'Alor Gajah', d4:'IPK SSPDRM' };
+    const notice = document.getElementById('caianDistrictNotice');
+    if(notice){
+      notice.textContent = '🔓 Akses terhad: ' + dName[matched];
+      notice.style.display = 'block';
+    }
+  } else {
+    errEl.textContent = '❌ Kata laluan salah. Sila cuba semula.';
+    errEl.style.display = 'block';
+    document.getElementById('caianPasswordInput').value = '';
+  }
+}
+
+function resetCarian(){
+  document.getElementById('carian_nobadan').value = '';
+  document.getElementById('carian_profile').style.display = 'none';
+  document.getElementById('carian_summary').style.display = 'none';
+  document.getElementById('carian_count').textContent = '—';
+  document.getElementById('carian_result').innerHTML = `
+    <div class="carian-empty">
+      <div style="font-size:36px;margin-bottom:12px;">🔍</div>
+      <div style="font-size:14px;font-weight:600;color:var(--muted);">Masukkan nombor badan dan pilih bulan/tahun untuk semak rekod penugasan</div>
+    </div>`;
+}
+
+async function cariAnggota(){
+  const noBadan = document.getElementById('carian_nobadan').value.trim();
+  const bulan   = parseInt(document.getElementById('carian_bulan').value);
+  const tahun   = parseInt(document.getElementById('carian_tahun').value);
+
+  if(!noBadan){
+    document.getElementById('carian_result').innerHTML = `<div class="carian-empty" style="color:#dc2626;">⚠️ Sila masukkan nombor badan anggota</div>`;
+    return;
+  }
+  if(!currentUser || currentUser.role !== 'admin') return;
+
+  // Show loading
+  document.getElementById('carian_result').innerHTML = `<div class="carian-loading">⏳ Mencari data untuk No. Badan <strong>${noBadan}</strong>...</div>`;
+  document.getElementById('carian_profile').style.display = 'none';
+  document.getElementById('carian_summary').style.display = 'none';
+
+  try {
+    const url = `${APPS_SCRIPT_URL}?action=getMonthlyData&username=${encodeURIComponent(currentUser.username)}&token=${encodeURIComponent(currentToken)}&nobadan=${encodeURIComponent(noBadan)}&bulan=${bulan}&tahun=${tahun}`;
+    const res  = await fetch(url);
+    const json = await res.json();
+
+    if(json.error){
+      document.getElementById('carian_result').innerHTML = `<div class="carian-empty" style="color:#dc2626;">❌ ${json.error}</div>`;
+      return;
+    }
+
+    const rows = json.rows || [];
+    renderCarianResult(rows, noBadan, bulan, tahun, json.profile || {});
+
+  } catch(e) {
+    document.getElementById('carian_result').innerHTML = `<div class="carian-empty" style="color:#dc2626;">❌ Ralat rangkaian. Sila cuba lagi.</div>`;
+  }
+}
+
+
 window.addEventListener('DOMContentLoaded',async()=>{
   const savedUser=sessionStorage.getItem('dashUser');
   const savedToken=sessionStorage.getItem('dashToken');
@@ -1421,6 +1986,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   setInterval(updateClock,1000);
   updateClock();
 });
+
 </script>
 </body>
 </html>
