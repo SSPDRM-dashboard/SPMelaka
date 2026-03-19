@@ -32,8 +32,8 @@ function initCarianTab(){
 }
 
 async function doCarianSearch(){
-  const isAdmin = currentUser && currentUser.role === 'admin';
-  if(!currentUser || (!isAdmin && !caianUnlockedDistrict)) return;
+  const isAdmin = isFullAdmin();
+  if(!currentUser || (!isFullAdmin() && !isDashAdmin() && !caianUnlockedDistrict)) return;
 
   const noBadan = document.getElementById('carian_nobadan').value.trim();
   const bulan   = parseInt(document.getElementById('carian_bulan').value);
@@ -73,7 +73,7 @@ async function doCarianSearch(){
         if(!tarikh) return false;
         const p = tarikh.split('/');
         if(parseInt(p[1]) !== bulan || parseInt(p[2]) !== tahun) return false;
-        if(!isAdmin && caianUnlockedDistrict){
+        if(!isFullAdmin() && caianUnlockedDistrict){
           const allowedDaerah = DAERAH_MAP[caianUnlockedDistrict];
           if(normDaerah(r.daerah) !== allowedDaerah) return false;
         }
@@ -91,7 +91,7 @@ async function doCarianSearch(){
         const p = tarikh.split('/');
         if(parseInt(p[1]) !== bulan || parseInt(p[2]) !== tahun) return false;
         // District restriction for non-admin
-        if(!isAdmin && caianUnlockedDistrict){
+        if(!isFullAdmin() && caianUnlockedDistrict){
           const allowedDaerah = DAERAH_MAP[caianUnlockedDistrict];
           if(normDaerah(r.daerah) !== allowedDaerah) return false;
         }
@@ -1068,7 +1068,7 @@ function renderCarianResult(rows, noBadan, bulan, tahun, profile){
         <!-- Nombor Badan -->
         <div>
           <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Nombor Badan</label>
-          <input type="text" id="carian_nobadan" placeholder="cth: 39093"
+          <input type="text" id="carian_nobadan" placeholder="cth: 39365"
             style="border:2px solid #dc2626;border-radius:8px;padding:10px 14px;font-size:14px;font-family:Inter,sans-serif;font-weight:700;outline:none;width:140px;color:var(--dark);background:#fff5f5;"
             onkeypress="if(event.key==='Enter') doCarianSearch()"
           />
@@ -1200,6 +1200,23 @@ const warmupPromise = fetch(APPS_SCRIPT_URL + '?action=warmup&t=' + Date.now())
 const TAB_LABELS = { today:'📅 Hari Ini (Semua)', d1:'🔴 Melaka Tengah', d2:'🟢 Jasin', d3:'🟡 Alor Gajah', d4:'🟣 IPK SSPDRM' };
 const DAERAH_MAP = { d1:'MELAKA TENGAH', d2:'JASIN', d3:'ALOR GAJAH', d4:'IPK SSPDRM' };
 const COLORS = ['#003087','#0a3fa8','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#dc2626','#16a34a','#d97706','#7c3aed'];
+
+// ── Admin level helpers ───────────────────────────────────────────
+// Admin level derived from District column in users sheet:
+//   role=admin + District EMPTY   → full admin (all 7 tabs)
+//   role=admin + District FILLED  → dash admin (5 tabs only, no Log, no Carian)
+//   role=user  + District filled  → district user (own tab only)
+function isFullAdmin(){
+  if(!currentUser || currentUser.role !== 'admin') return false;
+  const d = (currentUser.district || '').trim();
+  return d === ''; // empty district = full access
+}
+function isDashAdmin(){
+  if(!currentUser || currentUser.role !== 'admin') return false;
+  const d = (currentUser.district || '').trim();
+  return d !== ''; // any non-empty district = dashboard only
+}
+function isAnyAdmin(){ return currentUser && currentUser.role === 'admin'; }
 
 let allData = [];
 let charts = {};
@@ -1458,17 +1475,40 @@ function showDashboard(){
   document.getElementById('loginPage').style.display='none';
   document.getElementById('dashboardPage').style.display='block';
   document.getElementById('userPillName').textContent=currentUser.username.toUpperCase();
-  if(currentUser.role==='admin'){
+
+  // Hide all tabs first
+  ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.add('hidden'));
+  document.getElementById('tab_btn_log').classList.add('hidden');
+  document.getElementById('tab_btn_carian').classList.add('hidden');
+
+  const district = (currentUser.district || '').trim();
+
+  if(isFullAdmin()){
+    // Admin + empty district = full access (all 7 tabs)
     ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.remove('hidden'));
     document.getElementById('tab_btn_log').classList.remove('hidden');
     document.getElementById('tab_btn_carian').classList.remove('hidden');
     switchTab('today');
+
   } else {
-    ['today','d1','d2','d3','d4'].forEach(t=>document.getElementById('tab_btn_'+t).classList.add('hidden'));
-    document.getElementById('tab_btn_'+currentUser.district).classList.remove('hidden');
-    document.getElementById('tab_btn_log').classList.add('hidden');
-    document.getElementById('tab_btn_carian').classList.remove('hidden');
-    switchTab(currentUser.district);
+    // Everyone else — tabs controlled purely by District column
+    // Parse allowed districts: e.g. "d1/d2" → ['d1','d2']
+    const allowed = district.split('/').map(d=>d.trim().toLowerCase()).filter(d=>['d1','d2','d3','d4'].includes(d));
+
+    if(allowed.length > 0){
+      // Show only the allowed district tabs
+      allowed.forEach(d=>document.getElementById('tab_btn_'+d).classList.remove('hidden'));
+      // Show today tab if more than one district allowed
+      if(allowed.length > 1) document.getElementById('tab_btn_today').classList.remove('hidden');
+      // Log tab — only if district is empty (handled above) — hidden for all others
+      // Carian tab — visible for all non-full-admin (password protected)
+      document.getElementById('tab_btn_carian').classList.remove('hidden');
+      switchTab(allowed[0]);
+    } else {
+      // No valid district set — show today only
+      document.getElementById('tab_btn_today').classList.remove('hidden');
+      switchTab('today');
+    }
   }
   loadData();
 }
@@ -1518,7 +1558,7 @@ async function loadData(){
 // ── Log tab ──────────────────────────────────────────────────────
 
 async function renderLogTab(){
-  if(!currentUser||currentUser.role!=='admin') return;
+  if(!isFullAdmin()) return;
   const url=`${APPS_SCRIPT_URL}?action=getLogs&username=${encodeURIComponent(currentUser.username)}&token=${encodeURIComponent(currentToken)}`;
   try {
     const response=await fetch(url);
@@ -1865,16 +1905,16 @@ function initCarian(){
   document.getElementById('carian_bulan').value = now.getMonth() + 1;
 
   // Show/hide lock overlay based on role and unlock state
-  const isAdmin = currentUser && currentUser.role === 'admin';
+  const isAdmin = isFullAdmin();
   const lockSection = document.getElementById('caianLockSection');
   const caianContentEl = document.getElementById('caianContent');
-  if(isAdmin || caianUnlockedDistrict){
+  if(isFullAdmin() || caianUnlockedDistrict){
     lockSection.style.display = 'none';
     caianContentEl.style.display = 'block';
     // Show which district is accessible (non-admin)
     const districtNotice = document.getElementById('caianDistrictNotice');
     if(districtNotice){
-      if(!isAdmin && caianUnlockedDistrict){
+      if(!isFullAdmin() && caianUnlockedDistrict){
         const dName = { d1:'Melaka Tengah', d2:'Jasin', d3:'Alor Gajah', d4:'IPK SSPDRM' };
         districtNotice.textContent = '🔓 Akses terhad: ' + (dName[caianUnlockedDistrict] || caianUnlockedDistrict);
         districtNotice.style.display = 'block';
